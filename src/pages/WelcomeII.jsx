@@ -30,7 +30,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
                                   // .map(market => market.name);
 
   return (
-    <div className="text-center max-w-md w-full">
+    <div className="text-center max-w-md w-full mb-[20vh]">
       <h1 className="text-3xl font-extrabold text-slate-950 mb-4 tracking-tight">
         歡迎使用市集小幫手 🛒
       </h1>
@@ -64,7 +64,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
             </div>
       </div>
 
-      <div>　</div>
+      <div className="h-4" />
 
       <div className="grid grid-cols-1 gap-3 w-full">
         {showMarkets.map((market) => (

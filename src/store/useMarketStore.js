@@ -20,6 +20,7 @@ export const useMarketStore = create((set) => ({
       owner: "",
       poc: "",
       phone: "",
+      line: "",
       updatedAt: "", 
       isUpdatedToday: false , 
       rating: 0,
@@ -117,6 +118,8 @@ export const useMarketStore = create((set) => ({
     console.log("資料庫回傳的店家資訊原始資料是：", dbVendorInfoData);
     console.log("資料庫回傳的所有商品原始資料是：", dbProductsData);
 
+    // 2.定義合法的 LINE 網址格式
+    const lineUrlPattern = /^https:\/\/(lin\.ee|line\.me)\/.+/;
     // // 1. 取得今天的日期（並將時分秒設為 0，只保留日期）
     //   const today = new Date();
     //   today.setHours(0, 0, 0, 0);
@@ -141,10 +144,8 @@ export const useMarketStore = create((set) => ({
 
     // 2. 直接用 slice(0, 10) 擷取資料庫字串的前 10 個字
     // 確保 dbVendorInfoData.updatedAt 存在才執行，避免報錯
-    const dbDateString = dbVendorInfoData[0].update_at 
-      ? dbVendorInfoData[0].update_at.slice(0, 10) 
-      : '';
-
+    const dbDateString = 
+      dbVendorInfoData[0].update_at ? dbVendorInfoData[0].update_at.slice(0, 10) : '';
 
     //評分 計算方式
       const originalScore = dbVendorInfoData[0].score_good / dbVendorInfoData[0].score_total;
@@ -169,8 +170,10 @@ export const useMarketStore = create((set) => ({
       updatedAt: dbVendorInfoData[0].update_at.slice(0, 10) +" "+ dbVendorInfoData[0].update_at.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
       // isUpdatedToday: (updatedDate.getTime() === today.getTime()) , // 3. 進行比較，相同即為 true，不同則為 false
       isUpdatedToday: dbDateString === todayUTCString,
+      line: dbVendorInfoData[0].line || "沒有Line資訊",
+      isLineValid: dbVendorInfoData[0].line && dbVendorInfoData[0].line.trim() !== "" && lineUrlPattern.test(dbVendorInfoData[0].line),
       rating: rate || "計算、畫面待調整",
-      reviewCount: dbVendorInfoData[0].reviewCount || "變數名稱有誤",
+      reviewCount: dbVendorInfoData[0].reviewCount || "未做",
       today_image_url_old: dbVendorInfoData[0].today_image_url_old || "https://unsplash.com"
     };
     set({selectedVendorInfo:vendorInfoObject});

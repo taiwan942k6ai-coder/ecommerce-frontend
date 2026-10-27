@@ -25,10 +25,10 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const [productCategory, setProductCategory] = useState("");
 
   console.log("【除錯】FilterPage 接收到的原始 vendors 陣列是:", vendors[0]?.vendors);
-  if (isLoading) return <div>🛒 正在從資料庫撈取 【{selectedMarket}】 的攤商資料ing...</div>;
+  if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedMarket}】 的攤商資料ing...</div>;
   
   if (selectedMarketType==='offline') return (
-    <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md">      
+    <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md mb-[5vh]">      
       <div className="flex justify-between items-center mb-5">
         <div>
           <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">當前據點</span>
@@ -36,7 +36,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                           {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> {/* 💡 改成自己寫?*/}
+        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> 
           返回首頁
         </Button>
       </div>
@@ -44,10 +44,13 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
       {/* 中間的地圖與下拉選單 HTML 保持不變 ... */}
             <div className="w-full h-44 bg-slate-100 rounded-xl overflow-hidden mb-6 border border-slate-200 flex items-center justify-center relative">
               {/* <img src="https://unsplash.com" alt="市場地圖" className="w-full h-full object-cover opacity-70" /> */}
-              <img src={selectedMarketInfo.url} alt="市場地圖" className="w-full h-full object-cover opacity-70" />
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4">
+              <iframe src={selectedMarketInfo.url} width="600" height="450" style={{border:0}} allowFullScreen="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin"></iframe>  
+              
+              {/* <img src={selectedMarketInfo.url} alt="市場地圖" className="w-full h-full object-cover opacity-70" /> */}
+              {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4 "></div> */}
+              <div className="absolute inset-0 bg-black/1 flex items-end justify-center pb- p-4 pointer-events-none">
                 <span className="bg-white/95 text-slate-800 px-4 py-2 rounded-xl text-sm font-semibold shadow">
-                  🗺️ 「{selectedMarket}」平面地圖位置
+                  🗺️ 「{selectedMarket}」地圖位置
                 </span>
               </div>
             </div>
@@ -79,8 +82,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
               <Button 
                 className="w-full mt-0 bg-slate-900 hover:bg-slate-800 text-white py-6 text-base rounded-xl font-medium shadow-md"
                 disabled={(!vendors || !selectedVendor)}
-                onClick={() => handleVendorChange(selectedVendor)}
-              >
+                onClick={() => handleVendorChange(selectedVendor)}>
                 🚀 進入攤販頁面
               </Button>
 
@@ -109,7 +111,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
         // onClick={onSubmit} // 💡 點擊前往第三頁
         onClick={() => setPage(3)}
       >
-        🚀 前往看成果 (還沒設計這個頁面)
+        🚀 查詢 (還沒設計這個頁面)
       </Button>
     </div>
   );
@@ -139,7 +141,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
         </div>
 
       <div className="grid grid-cols-1 gap-3 w-full">
-        {vendors[0].vendors.map((vendor) => (
+        {vendors[0]?.vendors.map((vendor) => (
           <Button 
             key={vendor} 
             variant="outline" 

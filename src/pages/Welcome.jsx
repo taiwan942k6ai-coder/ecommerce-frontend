@@ -27,7 +27,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
   if (isLoading) return <div>🛒 市集小幫手初始化ing...</div>;
   // 請先選擇一個 實體市場 或 電商 逛逛吧！
   return (
-    <div className="text-center max-w-md w-full">
+    <div className="text-center max-w-md w-full mb-[20vh]">
       <h1 className="text-3xl font-extrabold text-slate-950 mb-4 tracking-tight">
         歡迎使用市集小幫手 🛒
       </h1>
@@ -46,7 +46,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
         </Button>
       </div>
 
-      <div>　</div>
+      <div className="h-4" /> 
 
       <div className="grid grid-cols-1 gap-3 w-full">
         <Button 
@@ -58,23 +58,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
             <span className="text-slate-400">→</span>
         </Button>
       </div>
-      <div>　</div>
 
-
-      <div className="grid grid-cols-1 gap-3 w-full">
-        {markets.map((market) => (
-          <Button 
-            key={market} 
-            variant="outline" 
-            className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            // onClick={() => onSelectMarket(market)} // 觸發上一層傳下來的動作
-            onClick={() => handleMarketChange(market,marketsInfo)} // 👍 直接執行，不需要爸爸傳過來！
-          >
-            <span>{market}</span>
-            <span className="text-slate-400">→</span>
-          </Button>
-        ))}
-      </div>
     </div>
   );
 }

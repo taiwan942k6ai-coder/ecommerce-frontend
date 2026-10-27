@@ -37,13 +37,19 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
   // const setProduct = useMarketStore((state) => state.setProduct);
   const resetVendor = useMarketStore((state) => state.resetVendor);
 
-  // 💡 只有自己會用到的變數，直接宣告在這裡！
-  // const [vendorCategory, setVendorCategory] = useState("");
-  // const [productCategory, setProductCategory] = useState("");
+  // 處理點擊事件的函式
+  const handleLineClick = (event) => {
+    if (!vendorInfo.isLineValid) {// 如果不合格，直接阻擋（其實按鈕反灰後本來就點不到了，這層是雙重防護）
+      event.preventDefault();
+      alert("店家未設定合格 LINE 連結！");
+      return;}
+    event.preventDefault();// 合格就正常開啟新分頁
+    window.open(vendorInfo.line, '_blank', 'noopener,noreferrer');
+  };
 
-  console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
+console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
 console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_old:", vendorInfo.today_image_url_old);
- if (isLoading) return <div>🛒 正在從資料庫撈取 【{selectedVendor}】 的店家資訊和商品...</div>;
+ if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
   return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
       
@@ -52,20 +58,16 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
         <img 
           src={vendorInfo.today_image_url_old } 
           alt="攤位實照" 
-          className="w-full h-full object-cover opacity-60"
-        />
+          className="w-full h-full object-cover opacity-60"/>
         <Button 
           variant="secondary" 
           size="sm" 
           className="absolute top-4 left-4 bg-white/90 hover:bg-white text-slate-800 shadow"
-          onClick={() =>{resetVendor();}}
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" /> 返回篩選
+          onClick={() =>{resetVendor();}}> <ArrowLeft className="w-4 h-4 mr-1" /> 返回篩選
         </Button>
         <div className="absolute bottom-4 left-4 text-white">
           <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">
-            市場實拍大圖
-          </span>
+            現場實照</span>
           <h2 className="text-2xl font-bold mt-1 shadow-sm">{selectedVendor}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                                  {vendorInfo.introduce || "暫無介紹"}</h3>
@@ -74,17 +76,36 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
 
       {/* 攤販基本資料區塊 */}
       <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-        <div className="grid grid-cols-2 gap-y-2 text-sm text-slate-600">
-          <div>👨‍🌾 聯絡人：<span className="font-medium text-slate-900">{vendorInfo.poc}</span></div>
-          <div>📞 聯絡電話：<span className="font-medium text-slate-900">{vendorInfo.phone}</span></div>
-          <div className="col-span-2 flex items-center gap-2 mt-1">
-            ⏱️ 更新時間：
+        <div className="grid grid-cols-5 gap-y-2 text-sm text-slate-600">
+          <div className="col-span-2">聯絡人👨‍🌾：<span className="shrink-0 font-medium text-slate-900">{vendorInfo.poc}</span></div>
+          <div className="col-span-3">　📞電話：<span className="whitespace-nowrap font-medium text-slate-900">{vendorInfo.phone}</span></div>
+          <div className="col-span-5 flex items-center gap-2 mt-1">
+            <span className="shrink-0">更新⏱️：</span>
             <span className={`font-medium ${vendorInfo.isUpdatedToday ? 'text-green-600' : 'text-rose-500'}`}>
-              {vendorInfo.updatedAt} {vendorInfo.isUpdatedToday ? '(今日已更新 ✅)' : '(⚠️ 今日尚未更新)'}
+              {vendorInfo.updatedAt}　<br />　{vendorInfo.isUpdatedToday ? '(今日已更新 ✅)' : '(⚠️ 今日尚未更新)'}　
             </span>
-              <Button size="sm" className="text-xs h-6 bg-blue-600 hover:bg-blue-700 text-white">
+              {/* <Button size="sm" className="text-xs h-6 bg-blue-600 hover:bg-blue-700 text-white">
                 <MapPin className="w-3.5 h-3.5 mr-1" /> 攤位導航
-              </Button>
+              </Button> */}
+
+                  {/* LINE 按鈕：直接把 handleLineClick 綁在 onClick 上，拿掉原本的class屬性 target="_blank" rel="noopener"  */}
+                  {/* <a  className="line-button" href={vendorInfo.line || "#"}  title="加入LINE好友" 
+                      onClick={handleLineClick}> */}
+                  {/* 所有樣式直接寫在 style 屬性裡，透過 isLineValid 動態切換 */}
+                  <a className="line-button"  href={vendorInfo.isLineValid ? vendorInfo.line : '#'} 
+                    onClick={handleLineClick} title={vendorInfo.isLineValid ? "加 LINE好友" : "店家未設定正確的 LINE"}
+                    style={{
+                      display: 'inline-block',
+                      transition: 'opacity 0.2s ease',
+                      //  如果不合格：變淡 (35% 透明度)、變黑白、徹底鎖死滑鼠事件
+                      opacity: vendorInfo.isLineValid ? 1 : 0.35,
+                      filter: vendorInfo.isLineValid ? 'none' : 'grayscale(100%)',
+                      pointerEvents: vendorInfo.isLineValid ? 'auto' : 'none',
+                      cursor: vendorInfo.isLineValid ? 'pointer' : 'not-allowed'
+                    }}>
+                  <img src="https://scdn.line-apps.com/n/line_add_friends/btn/zh-Hant.png" alt="加 LINE好友" 
+                  border="0" width="90"></img>
+                  </a>
           </div>
         </div>
 
@@ -103,12 +124,12 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
                       <Star key={index} className="w-5 h-5 text-slate-300" /> // 這裡不加 fill
                     );
                   })}
-            <span className="font-bold text-slate-900 text-base">{vendorInfo.rating}</span>
-            <span className="text-xs text-slate-400">({vendorInfo.reviewCount} 則評論)</span>
+            <span className="font-bold text-slate-900 text-base">{vendorInfo.rating}　</span>
+            {/* <span className="text-xs text-slate-400">({vendorInfo.reviewCount} 則評論)</span> */}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="text-xs h-8">
-              <MessageSquare className="w-3..5 h-3.5 mr-1" /> 查看回饋
+              <MessageSquare className="w-3..5 h-3.5 mr-1" />看評論({vendorInfo.reviewCount} 則)
             </Button>
             <Button variant="outline" size="sm" className="text-xs h-8 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">
               ⭐ 我要評分
@@ -123,7 +144,7 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
       {/* 商品串列區塊 */}
       <div className="p-5">
         <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-          🥬 今日菜單與即時菜價 <span className="text-xs font-normal text-slate-400">(AI 拍照自動辨識)</span>
+          🥬 今日商品與物價 <span className="text-xs font-normal text-slate-400">(拍照自動辨識，尚未製作)</span>
         </h3>
         
         <div className="space-y-3">
