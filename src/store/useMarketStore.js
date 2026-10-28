@@ -167,6 +167,8 @@ export const useMarketStore = create((set) => ({
       // owner: dbVendorInfoData[0].owner || "沒有擁有者資訊",
       poc: dbVendorInfoData[0].poc || dbVendorInfoData[0].owner || "沒有聯絡人資訊",
       phone: dbVendorInfoData[0].phone || "沒有連絡電話",
+      other: dbVendorInfoData[0].other || "沒有資訊",
+      open_time: dbVendorInfoData[0].open_time || "沒有營業時間",
       updatedAt: dbVendorInfoData[0].update_at.slice(0, 10) +" "+ dbVendorInfoData[0].update_at.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
       // isUpdatedToday: (updatedDate.getTime() === today.getTime()) , // 3. 進行比較，相同即為 true，不同則為 false
       isUpdatedToday: dbDateString === todayUTCString,
@@ -191,7 +193,7 @@ console.log('DB轉換資料:', dbDateString);
       const productPrice = product.price_origin || "沒價格";
       const productUnit = product.unit || "沒單位";
       const productNote = product.introduce || "沒介紹";
-      const productQuality = (product.score_good/product.score_totalXXX) || "這個欄位應該會拿掉或修改";
+      const productQuality = (product.score_good/product.score_totalXXX) || "這欄位會拿掉或修改";
       const productLikes = product.score_good || "沒讚數";
       const productDislikes = (product.score_total-product.score_good) || "要拿掉";
       const productImage = product.image_url_old || "沒照片";

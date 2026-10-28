@@ -17,13 +17,15 @@ export function Navbar() {  // 💡 使用 Named Export
   const resetMarket = useMarketStore((state) => state.resetMarket); 
 
   return (
-    <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
+    <nav className="bg-white border-b border-slate-200 px-6 py-2 flex justify-between items-center shadow-sm">
       <div 
         className="text-xl font-bold text-slate-800 cursor-pointer flex items-center gap-2"
-        // onClick={() => { setPage(1); resetMarket(); }} // 👍 呼叫金庫的功能
+        // onClick={() => { setPage(1); resetMarket(); }} //  呼叫金庫的功能
         onClick={() => { resetMarket(); }} 
       >
-        🏪 <span className="tracking-wider">市集小幫手</span>
+      <img  src="/市集小幫手.jpg"  alt="市集小幫手 LOGO" 
+            style={{ width: '200px', height: 'auto' }} />
+        {/* 🏪 <span className="tracking-wider">市集小幫手</span> */}
       </div>
    
       {page > 1 && (

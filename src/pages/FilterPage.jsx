@@ -31,12 +31,12 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md mb-[5vh]">      
       <div className="flex justify-between items-center mb-5">
         <div>
-          <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">當前據點</span>
+          <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">網站位置：實體市集</span>
           <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarket}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                           {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> 
+        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> {/* 💡 要改成回上一頁*/}
           返回首頁
         </Button>
       </div>
@@ -119,25 +119,32 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
 
 
 
+
+
+
+
+
+
+
+
     if (selectedMarketType==='online') return (
-    <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md">      
+    <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md mb-[20vh]">      
       <div className="flex justify-between items-center mb-5">
         <div>
-          <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">當前據點</span>
+          <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">網站位置：線上電商</span>
 
           <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarket}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                           {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> {/* 💡 改成自己寫?*/}
+        <Button variant="ghost" size="sm" onClick={() => { resetMarket(); }}> {/* 💡 要改成回上一頁*/}
           返回首頁
         </Button>
       </div>
 
         <div className="w-full h-44 bg-slate-100 rounded-xl overflow-hidden mb-6 border border-slate-200 flex items-center justify-center relative">
           <img src={selectedMarketInfo.url} alt={"電商產業類別_"+selectedMarketInfo.name+"_形像照"} className="w-full h-full object-cover opacity-70" />
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4">
-          </div>
+          {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4"></div> */}
         </div>
 
       <div className="grid grid-cols-1 gap-3 w-full">

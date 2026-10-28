@@ -36,14 +36,14 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
       </h1>
       <p className="text-slate-500 mb-8 text-base leading-relaxed">
         專為傳統市場設計的導覽與數位化系統。<br />
-        請先選擇一個 實體市場 或 電商 逛逛吧！
+        請選擇一個 實體市場 或 電商 逛逛吧！<br />（實體目前只有台北市）
       </p>
       {/* <div>測試目前變數{selectedMarketType}</div> */}
 
       <div className="flex items-center gap-4">
             <div className="w-1/3">{/* 左邊：文字標題 */}
-                { selectedMarketType==='offline' && <label className="block text-sm font-bold text-slate-700">市集的位置：</label>}
-                { selectedMarketType==='online' && <label className="block text-sm font-bold text-slate-700">選產業類別：</label>}
+                { selectedMarketType==='offline' && <label className="block text-sm font-bold text-slate-700">市集位置：</label>}
+                { selectedMarketType==='online' && <label className="block text-sm font-bold text-slate-700">產業類別：</label>}
             </div>
             <div className="flex-1">{/* 右邊：下拉選單 */}
             <select

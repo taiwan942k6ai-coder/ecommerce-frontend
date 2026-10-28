@@ -24,7 +24,8 @@ import { useMarketStore } from '../store/useMarketStore';
 
 function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
   // const page = useMarketStore((state) => state.page);
-  const selectedMarket = useMarketStore((state) => state.selectedMarket);
+  // const selectedMarket = useMarketStore((state) => state.selectedMarket);
+  const selectedMarketType = useMarketStore(state => state.selectedMarketType);
   const selectedVendor = useMarketStore((state) => state.selectedVendor);
   const vendorInfo = useMarketStore((state) => state.selectedVendorInfo);
   // const selectedProduct = useMarketStore((state) => state.selectedProduct);
@@ -50,6 +51,7 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
 console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
 console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_old:", vendorInfo.today_image_url_old);
  if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
+
   return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
       
@@ -66,8 +68,8 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
           onClick={() =>{resetVendor();}}> <ArrowLeft className="w-4 h-4 mr-1" /> 返回篩選
         </Button>
         <div className="absolute bottom-4 left-4 text-white">
-          <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">
-            現場實照</span>
+                { selectedMarketType==='offline' && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">現場實照</span>}
+                { selectedMarketType==='online'  && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">官網形象照</span>}
           <h2 className="text-2xl font-bold mt-1 shadow-sm">{selectedVendor}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                                  {vendorInfo.introduce || "暫無介紹"}</h3>
@@ -78,7 +80,16 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
       <div className="p-5 border-b border-slate-100 bg-slate-50/50">
         <div className="grid grid-cols-5 gap-y-2 text-sm text-slate-600">
           <div className="col-span-2">聯絡人👨‍🌾：<span className="shrink-0 font-medium text-slate-900">{vendorInfo.poc}</span></div>
-          <div className="col-span-3">　📞電話：<span className="whitespace-nowrap font-medium text-slate-900">{vendorInfo.phone}</span></div>
+          <div className="col-span-3">　電話📞：<span className="whitespace-nowrap font-medium text-slate-900">{vendorInfo.phone}</span></div>
+
+          { selectedMarketType==='offline' && (<>
+          <div className="col-span-2">攤販位置：<span className="shrink-0 font-medium text-slate-900">{vendorInfo.other}</span></div> 
+          <div className="col-span-3">　營業⏱️：<span className="whitespace-nowrap font-medium text-slate-900">{vendorInfo.open_time}</span></div>
+          </>)}
+          { selectedMarketType==='online'  && 
+          <div className="col-span-5">官網連結：<a className="hover:underline" href={vendorInfo.other} target="_blank" rel="noopener noreferrer">
+                                      <span className="shrink-0 font-medium text-slate-900">{vendorInfo.other}</span></a></div> }
+                    
           <div className="col-span-5 flex items-center gap-2 mt-1">
             <span className="shrink-0">更新⏱️：</span>
             <span className={`font-medium ${vendorInfo.isUpdatedToday ? 'text-green-600' : 'text-rose-500'}`}>
@@ -129,10 +140,10 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="text-xs h-8">
-              <MessageSquare className="w-3..5 h-3.5 mr-1" />看評論({vendorInfo.reviewCount} 則)
+              <MessageSquare className="w-3..5 h-3.5 mr-1" />看評論({vendorInfo.reviewCount})
             </Button>
             <Button variant="outline" size="sm" className="text-xs h-8 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">
-              ⭐ 我要評分
+              ⭐ 評分
             </Button>
             {/* <Button size="sm" className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white">
               <MapPin className="w-3.5 h-3.5 mr-1" /> 攤位導航
@@ -144,7 +155,9 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
       {/* 商品串列區塊 */}
       <div className="p-5">
         <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-          🥬 今日商品與物價 <span className="text-xs font-normal text-slate-400">(拍照自動辨識，尚未製作)</span>
+            { selectedMarketType==='offline' && "🥬 今日商品與物價" }
+            { selectedMarketType==='online'  && "❤️ 特色商品與價格"}
+          <span className="text-xs font-normal text-slate-400">(自動辨識，尚未製作)</span>
         </h3>
         
         <div className="space-y-3">
@@ -171,7 +184,7 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
                 {/* 讚、倒讚與品質分 */}
                 <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-1 border-t border-slate-50">
                   <div className="flex items-center gap-1">
-                    <span className="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-medium">
+                    <span className="bg-slate-100 text-slate-700 px-1 py-0.5 rounded text-[10px] font-medium">
                       品質 {product.quality}
                     </span>
                   </div>
