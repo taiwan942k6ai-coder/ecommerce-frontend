@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient'; // 確保路徑與你的 supabaseClient 一致
 
+//36行 仍需要優化，因為目前是先撈市場UID，再去撈攤販資料，應該要在DB結構上改善，讓攤販資料表直接有市場UID欄位，這樣就可以直接用市場UID去撈攤販資料，而不需要先撈市場UID再去撈攤販資料。
+
 /**
  * 專門負責去 Supabase 撈取市場清單的非同步函式
  * @returns {Promise<Array>} 回傳市場資料陣列
@@ -11,21 +13,17 @@ export async function fetchMarketsFromDB(marketType) {
     //   .select('*');
       .select('name,mk_type2,introduce,shop_types,map_address') // 只撈取 'name' 欄位
       .eq('mk_type',marketType)
+      .eq('visible',true)
       .order('name', { ascending: false }); // 按照 name 欄位排序
 
-    if (error) {
-      throw error;
-    }
+    if (error) { throw error;}
 
-    // 🌟 成功拿到資料，直接把陣列回傳出去給主檔案用
-    return data; 
+    return data;   // 🌟 成功拿到資料，直接把陣列回傳出去給主檔案用
   } catch (error) {
     console.error('撈取市場資料失敗:', error.message);
-    // 如果出錯，回傳空陣列，避免前端程式崩潰
-    return []; 
+    return []; // 如果出錯，回傳空陣列，避免前端程式崩潰
   }
 }
-
 
 /**
  * 根據所選的市場名稱，去 Supabase 撈取該市場限定的攤販清單
@@ -47,9 +45,10 @@ export async function fetchVendorsByMarketFromDB(marketName) {
       .from('shops')          // 🌟 1. 改找 vendors 資料表
       .select('*')
       .eq('mkuid', dataa.data.mkuid)
+      .eq('is_visible',true)
+      .eq('is_active',true)
       // .eq('mk_name', marketName) // 🌟 2. 核心：篩選出 market_name 欄位「等於」傳進來的市場名字的資料
       // .order('vid', { ascending: true }); // 假設攤販有自己的 id 叫 vid
-
     if (error) throw error;
     return data;
   } catch (error) {
@@ -67,6 +66,8 @@ export async function fetchVendorInfoFromDB(vendorUID){
       .select('*')
       // .eq('name', vendorName) 
       .eq('spuid', vendorUID) 
+      .eq('is_visible',true)
+      .eq('is_active',true)
 
     if (error) throw error;
     return data;
