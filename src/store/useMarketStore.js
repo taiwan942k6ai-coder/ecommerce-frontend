@@ -118,6 +118,14 @@ export const useMarketStore = create((set) => ({
     console.log("資料庫回傳的店家資訊原始資料是：", dbVendorInfoData);
     console.log("資料庫回傳的所有商品原始資料是：", dbProductsData);
 
+    if (!dbVendorInfoData || dbVendorInfoData.length === 0) {
+      //dbProductsData 還是會被顯示出來
+      console.error(`找不到 ${vendorName} 的攤販資訊`);
+      set({ products: [],
+        isLoading: false });
+      return;
+    }
+
     // 2.定義合法的 LINE 網址格式
     const lineUrlPattern = /^https:\/\/(lin\.ee|line\.me)\/.+/;
     // // 1. 取得今天的日期（並將時分秒設為 0，只保留日期）
@@ -144,11 +152,12 @@ export const useMarketStore = create((set) => ({
 
     // 2. 直接用 slice(0, 10) 擷取資料庫字串的前 10 個字
     // 確保 dbVendorInfoData.updatedAt 存在才執行，避免報錯
-    const dbDateString = 
-      dbVendorInfoData[0].update_at ? dbVendorInfoData[0].update_at.slice(0, 10) : '';
+    const dbDateString =  (dbVendorInfoData[0] && dbVendorInfoData[0].update_at) ?
+      dbVendorInfoData[0].update_at.slice(0, 10):undefined;
 
     //評分 計算方式
-      const originalScore = dbVendorInfoData[0].score_good / dbVendorInfoData[0].score_total;
+      const originalScore = (dbVendorInfoData[0] && dbVendorInfoData[0].score_good) ?
+       (dbVendorInfoData[0].score_good / dbVendorInfoData[0].score_total):undefined;
     // 定義分數界線（必須由大到小排）
       const thresholds = [
         { limit: 0.8,  score: 5 },
@@ -169,7 +178,7 @@ export const useMarketStore = create((set) => ({
       phone: dbVendorInfoData[0].phone || "沒有連絡電話",
       other: dbVendorInfoData[0].other || "沒有資訊",
       open_time: dbVendorInfoData[0].open_time || "沒有營業時間",
-      updatedAt: dbVendorInfoData[0].update_at.slice(0, 10) +" "+ dbVendorInfoData[0].update_at.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
+      updatedAt: dbVendorInfoData[0].update_at?.slice(0, 10) +" "+ dbVendorInfoData[0].update_at?.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
       // isUpdatedToday: (updatedDate.getTime() === today.getTime()) , // 3. 進行比較，相同即為 true，不同則為 false
       isUpdatedToday: dbDateString === todayUTCString,
       line: dbVendorInfoData[0].line || "沒有Line資訊",

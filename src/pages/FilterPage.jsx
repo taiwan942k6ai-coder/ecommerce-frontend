@@ -24,7 +24,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const [vendorCategory, setVendorCategory] = useState("");
   const [productCategory, setProductCategory] = useState("");
 
-  console.log("【除錯】FilterPage 接收到的原始 vendors 陣列是:", vendors[0]?.vendors);
+  console.log("【除錯】FilterPage 接收到的原始 vendors 陣列是:", vendors);
   if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedMarket}】 的攤商資料ing...</div>;
   
   if (selectedMarketType==='offline') return (
