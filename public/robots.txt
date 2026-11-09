@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /$
 Allow: /assets/
+Allow: /市集小幫手.jpg
 Disallow: /
