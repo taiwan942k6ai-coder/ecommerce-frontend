@@ -1,6 +1,5 @@
 import React ,{ useState, useEffect }from 'react';
 import { Button } from "@/components/ui/button";
-import { markets as FKM} from '../fakeData/mockData'; // 一樣把資料引進來
 import { useMarketStore } from '../store/useMarketStore'; 
 
 // 用 {} 把需要的工具和函式接過來
@@ -16,11 +15,12 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
   const marketsInfo = useMarketStore(state => state.marketsInfo);
   const isLoading = useMarketStore(state => state.isLoading);
   const loadAllMarkets = useMarketStore((state) => state.loadAllMarkets);
+  const loadAllMarketsByType = useMarketStore((state) => state.loadAllMarketsByType);
 
   useEffect(() => {
-    loadAllMarkets(selectedMarketType);}, []); // 空陣列代表「這頁一打開，只執行這一次」
+    loadAllMarketsByType(selectedMarketType);}, []); // 空陣列代表「這頁一打開，只執行這一次」
 
-  const [ selectedMarketType2, setSelectedMarketType2] = useState("") 
+  const [ selectedMarketType2, setSelectedMarketType2] = useState("") //後來的 market_categories
   const [ showMarkets, setShowMarkets] = useState([]) 
 
 
@@ -49,7 +49,9 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
             <select
                 value={selectedMarketType2}
                 onChange={(e) => {setSelectedMarketType2(e.target.value);  
-                    const targets = marketsObject.flatMap(m => m.mk_type2 === e.target.value ? [m.name]:[]);
+                    // const targets = marketsObject.flatMap(m => m.mk_type2 === e.target.value ? [m.name]:[]);
+                     console.log("目前要測試的變數是  marketsObject", marketsObject);
+                    const targets = marketsObject.flatMap(m => m.market_categories.category_name === e.target.value ? [m.mk_name]:[]);
                     console.log("目前要測試的變數是  targets：", targets);
                     if (targets) { setShowMarkets(targets)} 
                 } }
@@ -72,8 +74,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
             key={market} 
             variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            // onClick={() => onSelectMarket(market)} // 觸發上一層傳下來的動作
-            onClick={() => handleMarketChange(market,marketsInfo)} // 👍 直接執行，不需要爸爸傳過來！
+            onClick={() => handleMarketChange(market,marketsInfo)} // 正規化後，這裡應該要改
           >
             <span>{market}</span>
             <span className="text-slate-400">→</span>

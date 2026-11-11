@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { fetchMarketsFromDB , fetchVendorInfoFromDB , fetchVendorsByMarketFromDB , fetchOffLineProductsByVendorFromDB , fetchVendorUIDFromDB } from '../components/db/MarketList'; 
+import {  fetchMarketsFromDB2 ,fetchVendorInfoFromDB , fetchVendorsByMarketFromDB , fetchOffLineProductsByVendorFromDB } from '../components/db/MarketList'; 
 
 export const useMarketStore = create((set) => ({
   // #region       💰 1. 這裡放所有的全域變數 (State)
@@ -14,6 +14,7 @@ export const useMarketStore = create((set) => ({
     url:"",
   },
   selectedVendor: "",
+  selectedVendorUID: "",
   selectedVendorInfo:{
       name: "",
       introduce:  "",
@@ -43,6 +44,7 @@ export const useMarketStore = create((set) => ({
   setPage: (nextPage) => set({ page: nextPage }),
   setMarketType:(selectType) => set({ selectedMarketType: selectType}),
   setVendor:(userSelectVendor) => set({selectedVendor: userSelectVendor}),
+  setVendorUID:(userSelectVendorUID) => set({selectedVendorUID: userSelectVendorUID}),
   setProduct:(userSelectProduct) => set({selectedProduct: userSelectProduct}),
 
   // handleMarketChange: (marketName) => set({
@@ -53,10 +55,12 @@ export const useMarketStore = create((set) => ({
   // }),  // DB功能 B：使用者點擊市場時觸發
   handleMarketChange: async (marketName,marketsInfo) => {
     const marketInfo = {
-      name:     marketsInfo[marketName].name,
-      introduce:marketsInfo[marketName].introduce,
-      url:      marketsInfo[marketName].url,
-      vendors:  marketsInfo[marketName].vendors,
+      // uid:      marketsInfo[marketName].uid,
+      name:       marketsInfo[marketName].name,
+      introduce:  marketsInfo[marketName].introduce,
+      url:        marketsInfo[marketName].url,
+      // vendors:    marketsInfo[marketName].vendors,
+      // vendorUIDs: marketsInfo[marketName].vendorUIDs,
     };
     
     set({ 
@@ -67,9 +71,10 @@ export const useMarketStore = create((set) => ({
     page: "FilterPage",
     isLoading: true,
     });
+
     console.log("選定的市集資料：", marketInfo);
     // ➔ 順便直接去 DB 撈出這個市場專屬的攤販清單！
-    console.log("當前查詢的市集名稱為:", JSON.stringify(marketName));
+    console.log("當前查詢的市集名稱為:", JSON.stringify(marketInfo.name));
     const dbVendorsData = await fetchVendorsByMarketFromDB(marketName); // 傳入剛剛選的市場名字
     console.log("抓攤販資料，資料庫回傳的原始資料是：", dbVendorsData);
 
@@ -79,15 +84,17 @@ export const useMarketStore = create((set) => ({
     // 1. 改成用陣列來存分類： [ { id: "虛擬", name: "虛擬", shops: ["測試攤販(賣寶可夢)"] } ]
     const vendorsArray = [];
     dbVendorsData.forEach(vendor => {
-      const catName = vendor.sp_type || "未分類";
+      const catName = vendor.product_categories.category_name || "未分類";
   
       // 檢查這個分類是不是已經加進陣列了
       let existingCat = vendorsArray.find(c => c.name === catName); 
       if (!existingCat) {
         existingCat = { id: catName, name: catName, vendors: [] };
         vendorsArray.push(existingCat);}
-      if (!existingCat.vendors.includes(vendor.name)) {
-        existingCat.vendors.push(vendor.name);}});
+      if (!existingCat.vendors.includes(vendor.sp_name)) { existingCat.vendors.push({
+      uid: vendor.spuid,   // 這裡請確認你的欄位名稱是 uid 還是 id
+      name: vendor.sp_name
+      });                 }});
 
     set({ 
       vendors: vendorsArray, // 把整理好的資料塞進金庫
@@ -99,28 +106,27 @@ export const useMarketStore = create((set) => ({
   //   page: "VendorDetail",
   //   selectedProduct: "",
   // }),
-  handleVendorChange: async (vendorName) => {set({ 
-    selectedVendor: vendorName,
+  handleVendorChange: async (vendorUID) => {set({ 
     selectedProduct: "",
     page: "VendorDetail",
     isLoading: true,
     });
     
-    const UIDData = await fetchVendorUIDFromDB(vendorName);
+    // const UIDData = await fetchVendorUIDFromDB(vendorName);
 
     // ➔ 順便直接去 DB 撈出這個市場專屬的攤販清單！
-    console.log("當前查詢的商店為:", JSON.stringify(UIDData.spuid));
+    // console.log("當前查詢的商店為:", JSON.stringify(UIDData.spuid));
     // const dbProductsData = await fetchOffLineProductsByVendorFromDB(vendorName); // 傳入剛剛選的市場名字
     const [dbVendorInfoData, dbProductsData] = await Promise.all([
-      fetchVendorInfoFromDB(UIDData.spuid),
-      fetchOffLineProductsByVendorFromDB(UIDData.spuid)
+      fetchVendorInfoFromDB(vendorUID),
+      fetchOffLineProductsByVendorFromDB(vendorUID)
     ]);
     console.log("資料庫回傳的店家資訊原始資料是：", dbVendorInfoData);
     console.log("資料庫回傳的所有商品原始資料是：", dbProductsData);
 
     if (!dbVendorInfoData || dbVendorInfoData.length === 0) {
       //dbProductsData 還是會被顯示出來
-      console.error(`找不到 ${vendorName} 的攤販資訊`);
+      console.error(`找不到 ${vendorUID} 的攤販資訊`);
       set({ products: [],
         isLoading: false });
       return;
@@ -152,8 +158,8 @@ export const useMarketStore = create((set) => ({
 
     // 2. 直接用 slice(0, 10) 擷取資料庫字串的前 10 個字
     // 確保 dbVendorInfoData.updatedAt 存在才執行，避免報錯
-    const dbDateString =  (dbVendorInfoData[0] && dbVendorInfoData[0].update_at) ?
-      dbVendorInfoData[0].update_at.slice(0, 10):undefined;
+    const dbDateString =  (dbVendorInfoData[0] && dbVendorInfoData[0].updated_at) ?
+      dbVendorInfoData[0].updated_at.slice(0, 10):undefined;
 
     //評分 計算方式
       const originalScore = (dbVendorInfoData[0] && dbVendorInfoData[0].score_good) ?
@@ -172,13 +178,13 @@ export const useMarketStore = create((set) => ({
 
     const vendorInfoObject = {
       name: dbVendorInfoData[0].name || "沒有名子",
-      introduce:  dbVendorInfoData[0].introduce || "沒有介紹",
+      introduce:  dbVendorInfoData[0].sp_introduce || "沒有介紹",
       // owner: dbVendorInfoData[0].owner || "沒有擁有者資訊",
       poc: dbVendorInfoData[0].poc || dbVendorInfoData[0].owner || "沒有聯絡人資訊",
       phone: dbVendorInfoData[0].phone || "沒有連絡電話",
       other: dbVendorInfoData[0].other || "沒有資訊",
       open_time: dbVendorInfoData[0].open_time || "沒有營業時間",
-      updatedAt: dbVendorInfoData[0].update_at?.slice(0, 10) +" "+ dbVendorInfoData[0].update_at?.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
+      updatedAt: dbVendorInfoData[0].updated_at?.slice(0, 10) +" "+ dbVendorInfoData[0].updated_at?.slice(11, 19)   || "沒有更新時間", // 模擬今天日期
       // isUpdatedToday: (updatedDate.getTime() === today.getTime()) , // 3. 進行比較，相同即為 true，不同則為 false
       isUpdatedToday: dbDateString === todayUTCString,
       line: dbVendorInfoData[0].line || "沒有Line資訊",
@@ -197,15 +203,15 @@ console.log('DB轉換資料:', dbDateString);
 //  { id: 3, name: "網室溫室番茄", price: 90, unit: "斤", note: "微酸帶甜", quality: 4.2, likes: 18, dislikes: 4, image: "https://unsplash.com" },
     const productsArray = [];
     dbProductsData.forEach(product => {
-      const productType = product.pd_type || "未分類";
-      const productName = product.name || "沒名稱";
+      const productType = product.pd_type || "未分類";//正規化後可以加進來，以後搜尋用
+      const productName = product.pd_name || "沒名稱";
       const productPrice = product.price_origin || "沒價格";
       const productUnit = product.unit || "沒單位";
-      const productNote = product.introduce || "沒介紹";
+      const productNote = product.pd_introduce || "沒介紹";
       const productQuality = (product.score_good/product.score_totalXXX) || "這欄位會拿掉或修改";
       const productLikes = product.score_good || "沒讚數";
       const productDislikes = (product.score_total-product.score_good) || "要拿掉";
-      const productImage = product.image_url_old || "沒照片";
+      const productImage = product.image_url || "沒照片";
 
       let thisProduct = { id:productName, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage}
       productsArray.push(thisProduct);});
@@ -262,27 +268,57 @@ console.log('DB轉換資料:', dbDateString);
     selectedProduct: "",
   }),
 
-    // DB功能 A：一打開網頁，去撈所有市場清單(尚未做錯誤處理)
-  loadAllMarkets: async (marketType) => {
+  //   // DB功能 A：一打開網頁，去撈所有市場清單(尚未做錯誤處理)(正規化，沒BUG就可以刪了)
+  // loadAllMarkets: async (marketType) => {
+  //   set({ isLoading: true });
+  //   const dbMarketData = await fetchMarketsFromDB(marketType); // 👈 await 等待號碼牌震動，拿到真實資料
+  //   console.log("初始化市集資料，原始資料是：", dbMarketData);
+
+  //     // 🌟 核心轉換：因為 Supabase 撈出來是物件陣列 (如 [{mkid:1, name:"南門市場"}, ...])
+  //     // 必須轉換成你原本 UI 需要的「純字串陣列」 (如 ["南門市場", "士林市場"])
+  //   const marketObjects = dbMarketData;
+  //   const marketNames = dbMarketData.map(market => market.name); 
+  //   const marketsTypeSet = [...new Set(dbMarketData.map(market => market.mk_type2))]; 
+  //   set({ marketsObject: marketObjects, marketsType: marketsTypeSet, markets: marketNames, isLoading: false });
+
+  //   const marketsInfoObject = {};// 核心改動：直接用市場名稱當 Key 塞進物件裡
+  //   dbMarketData.forEach(info =>{
+  //     const marketName = info.name  || "沒市集名稱";
+  //     const marketIntroduce = info.introduce  || "沒市集介紹";
+  //     const marketShopTypes = info.shop_types  || "沒預設子項目陣列";
+  //     const marketURL = info.map_address  || "沒地圖url";
+  //     // 2. 核心改動：直接用市場名稱當 Key 塞進物件裡
+  //     marketsInfoObject[marketName] = { name:marketName, introduce:marketIntroduce, vendors:marketShopTypes, url:marketURL};
+  //   })
+  //   set({ marketsInfo: marketsInfoObject });
+  // },
+
+
+    // 資料庫正規化，重構 (好像不需要改這裡)
+  loadAllMarketsByType: async (marketType) => {
     set({ isLoading: true });
-    const dbMarketData = await fetchMarketsFromDB(marketType); // 👈 await 等待號碼牌震動，拿到真實資料
-    console.log("初始化市集資料，原始資料是：", dbMarketData);
+    const dbMarketData = await fetchMarketsFromDB2(marketType); // 👈 await 等待號碼牌震動，拿到真實資料
+    console.log("正規化市集資料，原始資料是：", dbMarketData);
 
       // 🌟 核心轉換：因為 Supabase 撈出來是物件陣列 (如 [{mkid:1, name:"南門市場"}, ...])
       // 必須轉換成你原本 UI 需要的「純字串陣列」 (如 ["南門市場", "士林市場"])
     const marketObjects = dbMarketData;
-    const marketNames = dbMarketData.map(market => market.name); 
-    const marketsTypeSet = [...new Set(dbMarketData.map(market => market.mk_type2))]; 
+    const marketNames = dbMarketData.map(market => market.mk_name); 
+    const marketsTypeSet = [...new Set(dbMarketData.map(market => market.market_categories.category_name))]; 
     set({ marketsObject: marketObjects, marketsType: marketsTypeSet, markets: marketNames, isLoading: false });
 
     const marketsInfoObject = {};// 核心改動：直接用市場名稱當 Key 塞進物件裡
     dbMarketData.forEach(info =>{
-      const marketName = info.name  || "沒市集名稱";
-      const marketIntroduce = info.introduce  || "沒市集介紹";
-      const marketShopTypes = info.shop_types  || "沒預設子項目陣列";
+      // const marketUID = info.mkuid  || "沒市集UID";
+      const marketName = info.mk_name  || "沒市集名稱";
+      const marketIntroduce = info.mk_introduce  || "沒市集介紹";
+      const marketShopTypes = info.shop_types  || "沒子項目陣列";
       const marketURL = info.map_address  || "沒地圖url";
       // 2. 核心改動：直接用市場名稱當 Key 塞進物件裡
-      marketsInfoObject[marketName] = { name:marketName, introduce:marketIntroduce, vendors:marketShopTypes, url:marketURL};
+      console.log("正規化DEBUG，原始資料 marketShopTypes是：", info.shop_types  || "沒子項目陣列");
+      marketsInfoObject[marketName] = { name:marketName, introduce:marketIntroduce, vendors:marketShopTypes, url:marketURL
+        // , uid:marketUID   先拿掉，需要思考要不用這個值
+      };
     })
     set({ marketsInfo: marketsInfoObject });
   },

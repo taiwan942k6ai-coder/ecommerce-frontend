@@ -14,11 +14,20 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
   const setPage = useMarketStore(state => state.setPage)
   const setMarketType = useMarketStore(state => state.setMarketType)
   // const loadAllMarkets = useMarketStore((state) => state.loadAllMarkets);
-
-  // useEffect(() => {
-    // loadAllMarkets();}, []); // 空陣列代表「這頁一打開，只執行這一次」
+  // useEffect(() => { loadAllMarkets();}, []); // 移到 WelcomeII.jsx 
 
   function handleOption(marketType){
+
+
+        // 1. 先確認瀏覽器有沒有載入過 GA4 (防呆，避免本機開發時報錯)
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+      window.gtag("event", "generate_lead", {
+        currency: "新台幣(沒用到可以拿掉嗎)", // 這個事件的貨幣單位
+        value: 777, // 隨便給這個選擇行為一個分數/價值
+        market_selection: marketType === "offline" ? "實體市集" : "線上電商", // 紀錄使用者選了哪一個
+        page_location: window.location.href // 紀錄當前的網址
+      });
+    }
     setMarketType(marketType)
     setPage("WelcomeII")
   }

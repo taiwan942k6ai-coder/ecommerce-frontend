@@ -10,12 +10,14 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const selectedMarket = useMarketStore((state) => state.selectedMarket);
   const selectedMarketInfo = useMarketStore((state) => state.selectedMarketInfo);
   const selectedVendor = useMarketStore((state) => state.selectedVendor);
+  const selectedVendorUID = useMarketStore((state) => state.selectedVendorUID);//不確定會不會用到
   const selectedProduct = useMarketStore((state) => state.selectedProduct);
   // const markets = useMarketStore((state) => state.markets);
   const vendors = useMarketStore(state => state.vendors);
   const isLoading = useMarketStore(state => state.isLoading);
   // const setPage = useMarketStore((state) => state.setPage);
   const setVendor = useMarketStore((state) => state.setVendor);
+  const setVendorUID = useMarketStore((state) => state.setVendorUID);
   const setProduct = useMarketStore((state) => state.setProduct);
   const resetMarket = useMarketStore((state) => state.resetMarket);
   const handleVendorChange = useMarketStore((state) => state.handleVendorChange);
@@ -23,6 +25,23 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   // 💡 只有自己會用到的變數，直接宣告在這裡！
   const [vendorCategory, setVendorCategory] = useState("");
   const [productCategory, setProductCategory] = useState("");
+
+  const handleSelectVendorChange = (value) => {
+  if (!value) {  setVendor("");  setVendorUID("");  return;}
+
+  setVendor(value.name);
+  setVendorUID(value.uid); 
+  //有些UI不知原VALUE是物件，需要根據選到的 value 找出對應的 UID// const found = vendorList.find(item => item.name === value); // setVendorUID(found?.uid);
+};
+
+// const handleSelectVendorChange = (selectedUid) => {
+//   setVendorUID(selectedUid);//   // 1. 先存下 UID（讓 Select 元件能正確比對並顯示目前選中的項目）
+//   const currentCat = vendors?.find((c) => c.name === vendorCategory);//   // 2. 從目前分類的 vendors 陣列中，用 uid 找出完整的攤販物件
+//   const targetVendor = currentCat?.vendors?.find((v) => String(v.uid) === selectedUid);
+//   if (targetVendor) {//   // 3. 如果有找到，就把「名稱」也存起來
+//     setVendor(targetVendor.name); // 這裡存名稱（若你的 state 叫 setVendor 請自行替換）
+//   }
+// };
 
   console.log("【除錯】FilterPage 接收到的原始 vendors 陣列是:", vendors);
   if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedMarket}】 的攤商資料ing...</div>;
@@ -59,7 +78,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 block">🔍 找攤販</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <Select value={vendorCategory} onValueChange={(val) => { setVendorCategory(val); setVendor(""); }}>
+                  <Select value={vendorCategory} onValueChange={(val) => { setVendorCategory(val); setVendor(""); setVendorUID("");}}>
                     <SelectTrigger><SelectValue placeholder="選擇分類 (如:熟食)" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]"> {/* 🌟 加上 popper 防阻擋 */}
                             {/* 🌟 改用純陣列去 map */}
@@ -67,14 +86,12 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                         <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>))} 
                     </SelectContent>
                   </Select>
-                  <Select value={selectedVendor} onValueChange={setVendor} disabled={!vendorCategory}>
+                  {/* 右邊的標籤，難呀!!! */}
+                  <Select value={selectedVendor} onValueChange={handleSelectVendorChange} disabled={!vendorCategory}>
                     <SelectTrigger><SelectValue placeholder="選擇指定攤販" /></SelectTrigger>
-                    <SelectContent position="popper" className="z-[9999]"> {/* 🌟 這裡也加上防阻擋 */}
-                            {/* 🌟 修改這裡：從陣列中找出目前選中的分類，再把裡面的攤販名字 map 出來 */}
-                      {vendorCategory && vendors
-                      .find(c => c.name === vendorCategory)?.vendors
-                      .map((vendorName) => (
-                            <SelectItem key={vendorName} value={vendorName}>{vendorName}</SelectItem>))}
+                    <SelectContent position="popper" className="z-">
+                      {vendorCategory && vendors?.find((c) => c.name === vendorCategory)
+                        ?.vendors?.map((v) => (<SelectItem key={v.uid} value={v}> {v.name} </SelectItem>))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -82,7 +99,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
               <Button 
                 className="w-full mt-0 bg-slate-900 hover:bg-slate-800 text-white py-6 text-base rounded-xl font-medium shadow-md"
                 disabled={(!vendors || !selectedVendor)}
-                onClick={() => handleVendorChange(selectedVendor)}>
+                onClick={() => handleVendorChange(selectedVendorUID)} >
                 🚀 進入攤販頁面
               </Button>
 
@@ -150,13 +167,12 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
       <div className="grid grid-cols-1 gap-3 w-full">
         {vendors[0]?.vendors.map((vendor) => (
           <Button 
-            key={vendor} 
+            key={vendor.uid} 
             variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            // onClick={() => onSelectMarket(market)} // 觸發上一層傳下來的動作
-            onClick={() => handleVendorChange(vendor)}
+            onClick={() => handleVendorChange(vendor.uid)}
           >
-            <span>{vendor}</span>
+            <span>{vendor.name}</span>
             <span className="text-slate-400">→</span>
           </Button>
         ))}
