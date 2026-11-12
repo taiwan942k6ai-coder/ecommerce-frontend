@@ -3,24 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Star, StarHalf, ThumbsUp, ThumbsDown, ArrowLeft, MessageSquare, MapPin } from "lucide-react"; // 引入小圖示
 import { useMarketStore } from '../store/useMarketStore'; 
 
-// function VendorDetail({ vendorName, onBack }) {
-  // 模擬從資料庫撈出的攤販詳細資料
-//   // 模擬該攤販的商品列表
-//   const [products] = useState([
-//     { id: 1, name: "有機高麗菜", price: 65, unit: "斤", note: "梨山脆甜", quality: 4.8, likes: 45, dislikes: 2, image: "https://unsplash.com" },
-//     { id: 2, name: "本地黑葉白菜", price: 35, unit: "把", note: "今日剛採收", quality: 4.5, likes: 22, dislikes: 0, image: "https://unsplash.com" },
-//     { id: 3, name: "網室溫室番茄", price: 90, unit: "斤", note: "微酸帶甜", quality: 4.2, likes: 18, dislikes: 4, image: "https://unsplash.com" },
-//   ]);
-  // const vendorInfo = {
-  //   name:  "陳家有機蔬菜",
-  //   // name: vendorName || "陳家有機蔬菜",
-  //   owner: "陳大明",
-  //   phone: "0912-345-678",
-  //   updatedAt: "2026-09-27 08:30", // 模擬今天日期
-  //   isUpdatedToday: true, // 是否為今日更新
-  //   rating: 4.7,
-  //   reviewCount: 128,  
-  // };
 
 function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
   // const page = useMarketStore((state) => state.page);
@@ -41,18 +23,15 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
   // 處理點擊事件的函式
   const handleLineClick = (event) => {
     if (!vendorInfo.isLineValid) {// 如果不合格，直接阻擋（其實按鈕反灰後本來就點不到了，這層是雙重防護）
-      event.preventDefault();
-      alert("店家未設定合格 LINE 連結！");
-      return;}
+      event.preventDefault();  alert("店家未設定合格 LINE 連結！");  return;}
     event.preventDefault();// 合格就正常開啟新分頁
     window.open(vendorInfo.line, '_blank', 'noopener,noreferrer');
   };
 
-console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
-console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_old:", vendorInfo.today_image_url_old);
- if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
-
-  return (
+// console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
+// console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_old:", vendorInfo.today_image_url_old);
+if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
+return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
       
       {/* 頂部橫幅與返回按鈕 */}
@@ -105,9 +84,7 @@ console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_ol
                   {/* 所有樣式直接寫在 style 屬性裡，透過 isLineValid 動態切換 */}
                   <a className="line-button"  href={vendorInfo.isLineValid ? vendorInfo.line : '#'} 
                     onClick={handleLineClick} title={vendorInfo.isLineValid ? "加 LINE好友" : "店家未設定正確的 LINE"}
-                    style={{
-                      display: 'inline-block',
-                      transition: 'opacity 0.2s ease',
+                    style={{  display: 'inline-block',  transition: 'opacity 0.2s ease',
                       //  如果不合格：變淡 (35% 透明度)、變黑白、徹底鎖死滑鼠事件
                       opacity: vendorInfo.isLineValid ? 1 : 0.35,
                       filter: vendorInfo.isLineValid ? 'none' : 'grayscale(100%)',

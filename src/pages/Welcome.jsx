@@ -7,9 +7,9 @@ import { useMarketStore } from '../store/useMarketStore';
 // function Welcome({ onSelectMarket }) {
 
 function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
-  const handleMarketChange = useMarketStore((state) => state.handleMarketChange);
-  const markets = useMarketStore(state => state.markets);
-  const marketsInfo = useMarketStore(state => state.marketsInfo);
+  // const handleMarketChange = useMarketStore((state) => state.handleMarketChange);
+  // const markets = useMarketStore(state => state.markets);
+  // const marketsInfo = useMarketStore(state => state.marketsInfo);
   const isLoading = useMarketStore(state => state.isLoading);
   const setPage = useMarketStore(state => state.setPage)
   const setMarketType = useMarketStore(state => state.setMarketType)
@@ -17,8 +17,6 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
   // useEffect(() => { loadAllMarkets();}, []); // 移到 WelcomeII.jsx 
 
   function handleOption(marketType){
-
-
         // 1. 先確認瀏覽器有沒有載入過 GA4 (防呆，避免本機開發時報錯)
     if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
       window.gtag("event", "generate_lead", {
@@ -34,7 +32,6 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
 
 
   if (isLoading) return <div>🛒 市集小幫手初始化ing...</div>;
-  // 請先選擇一個 實體市場 或 電商 逛逛吧！
   return (
     <div className="text-center max-w-md w-full mb-[20vh]">
       <h1 className="text-3xl font-extrabold text-slate-950 mb-4 tracking-tight">
@@ -43,6 +40,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
       <p className="text-slate-500 mb-8 text-base leading-relaxed">
         專為傳統市場設計的導覽與數位化系統。<br />
         請先選擇您要查找的 市集 吧！
+        {/* 請先選擇一個 實體市場 或 電商 逛逛吧！ */}
       </p>
       <div className="grid grid-cols-1 gap-3 w-full">
         <Button 

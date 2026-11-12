@@ -38,16 +38,12 @@ export async function fetchMarketsFromDB2(marketType) {
       .eq('mk_type',marketType)
       .eq('is_visible',true)
       .order('mk_name', { ascending: false }); // 按照 name 欄位排序
-
     if (error) { throw error;}  return data;   
   } catch (error) {
     console.error('撈取市場資料失敗:', error.message);
     return []; 
   }
 }
-
-
-
 
 
 
@@ -58,11 +54,9 @@ export async function fetchMarketsFromDB2(marketType) {
  */
 export async function fetchVendorsByMarketFromDB(marketName) {
   if (!marketName) return []; // 安全檢查：如果沒傳市場名字，直接回傳空陣列
-
 //改UID加這行，為了效能應該要在改善DB結構
       const  dataa  = await supabase
       .from('markets').select('mkuid').eq('name', marketName).single()
-
 //   try {
 //     const { data, error } = await supabase
 //       .from('shops')          // 🌟 1. 改找 vendors 資料表
@@ -77,12 +71,12 @@ export async function fetchVendorsByMarketFromDB(marketName) {
 //   } catch (error) {
 //     console.error(`撈取 ${marketName} 的攤販資料失敗:`, error.message);
 //     return [];
-//   }
-// }
+//   } }
   try {
     const { data, error } = await supabase
       .from('sellers')          // 🌟 1. 改找 vendors 資料表
-      .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name)')
+// .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name)')
+      .select('sp_name,product_categories(category_name),spuid')
       .eq('mkuid', dataa.data.mkuid)
       .eq('is_visible',true)
       .eq('is_active',true)
@@ -97,6 +91,7 @@ export async function fetchVendorsByMarketFromDB(marketName) {
 }
 
 
+
 // 底下還沒正規化//資料庫電商 分類還沒做好
 export async function fetchVendorInfoFromDB(vendorUID){
     if (!vendorUID) return [];
@@ -108,14 +103,15 @@ export async function fetchVendorInfoFromDB(vendorUID){
       .eq('spuid', vendorUID) 
       .eq('is_visible',true)
       .eq('is_active',true)
-
     if (error) throw error;
     return data;
   } catch (error){
-          console.error(`撈取 ${vendorUID} 店家資訊失敗:`, error.message);
-    return [];
+      console.error(`撈取 ${vendorUID} 店家資訊失敗:`, error.message);
+      return [];
   }
 }
+
+
 
 export async function fetchOffLineProductsByVendorFromDB(vendorUID){
     if (!vendorUID) return [];
