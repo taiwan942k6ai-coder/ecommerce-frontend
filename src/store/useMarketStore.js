@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import {  fetchMarketsFromDB2 ,fetchVendorInfoFromDB , fetchVendorsByMarketFromDB , fetchOffLineProductsByVendorFromDB } from '../components/db/MarketList'; 
+import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB } from '../components/db/MarketList'; 
 
 export const useMarketStore = create((set) => ({
   // #region       💰 1. 這裡放所有的全域變數 (State)
@@ -36,6 +36,7 @@ export const useMarketStore = create((set) => ({
   markets:      [],
   marketsInfo:  {},
   vendors:      [], 
+  productsType: [],
   products:     [],
   isLoading: false,
   // #endregion
@@ -77,7 +78,8 @@ export const useMarketStore = create((set) => ({
     console.log("當前查詢的市集名稱為:", JSON.stringify(marketInfo.name));
     const dbVendorsData = await fetchVendorsByMarketFromDB(marketName); // 傳入剛剛選的市場名字
     console.log("抓攤販資料，資料庫回傳的原始資料是：", dbVendorsData);
-
+    const dbProductsTypeData = await fetchProductsTypeByMarketFromDB(marketName);
+console.log("抓商品資料，資料庫回傳的原始資料是：", dbProductsTypeData);
     // ==========================================
     // 🌟 核心處理：將 Supabase 的扁平陣列，整理成 UI 需要的分類資料
     // ==========================================
@@ -97,6 +99,7 @@ export const useMarketStore = create((set) => ({
       });                 }});
 
     set({ 
+      productsType:dbProductsTypeData,
       vendors: vendorsArray, // 把整理好的資料塞進金庫
       isLoading: false 
     });

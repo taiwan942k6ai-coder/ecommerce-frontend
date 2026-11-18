@@ -46,7 +46,6 @@ export async function fetchMarketsFromDB2(marketType) {
 }
 
 
-
 /**
  * 正規化：根據所選的市場名稱，去 Supabase 撈取該市場限定的攤販清單
  * @param {string} marketName - 被選中的市場名字 (例如: "2C電商")
@@ -56,7 +55,7 @@ export async function fetchVendorsByMarketFromDB(marketName) {
   if (!marketName) return []; // 安全檢查：如果沒傳市場名字，直接回傳空陣列
 //改UID加這行，為了效能應該要在改善DB結構
       const  dataa  = await supabase
-      .from('markets').select('mkuid').eq('name', marketName).single()
+      .from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
 //   try {
 //     const { data, error } = await supabase
 //       .from('shops')          // 🌟 1. 改找 vendors 資料表
@@ -78,19 +77,35 @@ export async function fetchVendorsByMarketFromDB(marketName) {
 // .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name)')
       .select('sp_name,product_categories(category_name),spuid')
       .eq('mkuid', dataa.data.mkuid)
-      .eq('is_visible',true)
-      .eq('is_active',true)
+      .eq('is_visible',true).eq('is_active',true)
       // .eq('mk_name', marketName) // 🌟 2. 核心：篩選出 market_name 欄位「等於」傳進來的市場名字的資料
       // .order('vid', { ascending: true }); // 假設攤販有自己的 id 叫 vid
     if (error) throw error;
     return data;
   } catch (error) {
     console.error(`撈取 ${marketName} 的攤販資料失敗:`, error.message);
-    return [];
-  }
+    return [];  }
 }
 
-
+/**
+ * 正規化搜尋功能：根據所選的市場名稱，去 Supabase 撈取該市場限定的攤販清單
+ * @param {string} marketName - 被選中的市場名字 (例如: "2C電商")
+ * @returns {Promise<Array>} 該市場的商品陣列
+ */
+export async function fetchProductsTypeByMarketFromDB(marketName) {
+  if (!marketName) return []; // 安全檢查：如果沒傳市場名字，直接回傳空陣列
+//改UID加這行，為了效能應該要在改善DB結構
+      const  dataa  = await supabase.from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
+  try {
+      const { data, error } = await supabase.from('market_category_relations')         
+        .select('category_id,product_categories(category_name, product_subcategories(subcategory_id,subcategory_name))')
+        .eq('market_uid', dataa.data.mkuid)
+      if (error) throw error;
+      console.log('抓到的商品資料集:'+data);
+      return data;
+    } catch (error) {
+      console.error(`撈取 ${marketName} 的商品大類資料失敗:`, error.message);
+      return [];  } }
 
 // 底下還沒正規化//資料庫電商 分類還沒做好
 export async function fetchVendorInfoFromDB(vendorUID){
@@ -121,7 +136,7 @@ export async function fetchOffLineProductsByVendorFromDB(vendorUID){
       .select('*')
       // .eq('sp_name', vendorName) // 🌟 2. 核心：篩選出 market_name 欄位「等於」傳進來的市場名字的資料
       .eq('spuid', vendorUID) // 
-      .eq('have_stock', true)
+      // .eq('have_stock', true)
       .eq('is_visible', true)
       .eq('is_active', true)
 

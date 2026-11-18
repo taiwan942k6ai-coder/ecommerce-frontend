@@ -7,6 +7,7 @@ import Welcome from "./pages/Welcome";
 import WelcomeII from "./pages/WelcomeII";
 import FilterPage from "./pages/FilterPage"; 
 import VendorDetail from "./pages/VendorDetail";
+import SearchPage from "./pages/SearchPage";
 // import { markets } from './fakeData/mockData'; // 引進需要的假資料
 
 // function App() {
@@ -116,6 +117,7 @@ function App() {  // 💡 使用Zustand 從金庫裡只拿自己需要的 step �
         {page === "WelcomeII" && <WelcomeII />}
         {page === "FilterPage" && <FilterPage />}
         {page === "VendorDetail" && <VendorDetail />}
+        {page === "SearchPage" && <SearchPage />}
     </div>
     </main>
   </div>
