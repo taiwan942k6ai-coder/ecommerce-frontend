@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB } from '../components/db/MarketList'; 
+import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB, fetchProductsBySearch } from '../components/db/MarketList'; 
 
 export const useMarketStore = create((set) => ({
   // #region       💰 1. 這裡放所有的全域變數 (State)
@@ -29,6 +29,8 @@ export const useMarketStore = create((set) => ({
       uid: "",
   },
   selectedProduct: "",
+  selectedMarketType2:"",
+  showMarkets:[],
 
   // 💰 DB資料池//底下是否要清空這些質，待思考
   marketsObject:{},
@@ -47,7 +49,8 @@ export const useMarketStore = create((set) => ({
   setVendor:(userSelectVendor) => set({selectedVendor: userSelectVendor}),
   setVendorUID:(userSelectVendorUID) => set({selectedVendorUID: userSelectVendorUID}),
   setProduct:(userSelectProduct) => set({selectedProduct: userSelectProduct}),
-
+  setSelectedMarketType2:(userSelected) => set({selectedMarketType2: userSelected}),
+  setShowMarkets:(userSelected) => set({showMarkets: userSelected}),
   // handleMarketChange: (marketName) => set({
   //   selectedMarket: marketName,
   //   page: "FilterPage",
@@ -211,12 +214,14 @@ console.log('DB轉換資料:', dbDateString);
       const productPrice = product.price_origin || "沒價格";
       const productUnit = product.unit || "沒單位";
       const productNote = product.pd_introduce || "沒介紹";
+      const productSeller = product.sellers.sp_name || "沒店家名稱";
+      const productSellerUID = product.sellers.spuid || "沒店家UID";
       const productQuality = (product.score_good/product.score_totalXXX) || "這欄位會拿掉或修改";
       const productLikes = product.score_good || "沒讚數";
       const productDislikes = (product.score_total-product.score_good) || "要拿掉";
       const productImage = product.image_url || "沒照片";
 
-      let thisProduct = { id:productName, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage}
+      let thisProduct = { id:productName, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage, seller:productSeller, sellerUID:productSellerUID}
       productsArray.push(thisProduct);});
 
     set({ 
@@ -295,6 +300,111 @@ console.log('DB轉換資料:', dbDateString);
   //   })
   //   set({ marketsInfo: marketsInfoObject });
   // },
+
+
+    handleSearchChange: async (selectedMarket,B,M,S) => {set({ 
+    selectedProduct: "",//這個變數從來沒用到?
+    page: "SearchPage",
+    isLoading: true,
+    });
+
+    // console.log("當前查詢的商店為:", JSON.stringify(UIDData.spuid));
+ 
+    const [ dbProductsData] = await Promise.all([
+      // fetchVendorInfoFromDB(vendorUID),
+      fetchProductsBySearch(selectedMarket,B,M,S)
+    ]);
+    // console.log("資料庫回傳的店家資訊原始資料是：", dbVendorInfoData);
+    console.log("資料庫回傳的所有商品原始資料是：", dbProductsData);
+
+    if ( dbProductsData.length === 0) {
+      console.error(`搜尋資訊為零`);
+      set({ products: [],
+        isLoading: false });
+      return;
+    }
+
+   
+
+   
+    // ==========================================
+    // 🌟 核心處理：將 Supabase 的扁平陣列，整理成 UI 需要的分類資料
+    // ==========================================
+//  { id: 3, name: "網室溫室番茄", price: 90, unit: "斤", note: "微酸帶甜", quality: 4.2, likes: 18, dislikes: 4, image: "https://unsplash.com" },
+    const productsArray = [];
+    dbProductsData.forEach(product => {
+      const productType = product.pd_type || "未分類";//正規化後可以加進來，以後搜尋用
+      const productName = product.pd_name || "沒名稱";
+      const productPrice = product.price_origin || "沒價格";
+      const productUnit = product.unit || "沒單位";
+      const productNote = product.pd_introduce || "沒介紹";
+      const productSeller = product.sellers.sp_name || "沒店家名稱";
+      const productSellerUID = product.sellers.spuid || "沒店家UID";
+      const productQuality = (product.score_good/product.score_totalXXX) || "這欄位會拿掉或修改";
+      const productLikes = product.score_good || "沒讚數";
+      const productDislikes = (product.score_total-product.score_good) || "要拿掉";
+      const productImage = product.image_url || "沒照片";
+
+      let thisProduct = { id:productName, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage, seller:productSeller, sellerUID:productSellerUID}
+      productsArray.push(thisProduct);});
+
+    set({ 
+      products: productsArray, // 把整理好的資料塞進金庫
+      isLoading: false 
+    });
+  },
+
+  resetMarket: () => set({
+    page: "Welcome",
+    marketsObject:{},
+    marketsType:  [],
+    markets:      [],
+    marketsInfo:  {},
+    vendors:      [], 
+    products:     [],
+
+    selectedMarket: "",
+    selectedMarketInfo:{
+      name:"",
+      introduce:"",
+      vendors: [],
+    },
+    selectedVendor: "",
+    selectedVendorInfo:{
+      name: "",
+      introduce:  "",
+      owner: "",
+      poc: "",
+      phone: "",
+      updatedAt: "", 
+      isUpdatedToday: false , 
+      rating: 0,
+      reviewCount: 0,
+    },
+    selectedProduct: "",
+  }),
+  resetVendor: () => set({
+    page: "FilterPage",
+    selectedVendor: "",
+    selectedVendorInfo:{
+      name: "",
+      introduce:  "",
+      owner: "",
+      poc: "",
+      phone: "",
+      updatedAt: "", 
+      isUpdatedToday: false , 
+      rating: 0,
+      reviewCount: 0,
+    },
+    selectedProduct: "",
+  }),
+
+
+
+
+
+
 
 
     // 資料庫正規化，重構 (好像不需要改這裡)

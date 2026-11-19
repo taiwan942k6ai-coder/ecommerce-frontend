@@ -20,9 +20,12 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
   useEffect(() => {
     loadAllMarketsByType(selectedMarketType);}, []); // 空陣列代表「這頁一打開，只執行這一次」
 
-  const [ selectedMarketType2, setSelectedMarketType2] = useState("") //後來的 market_categories
-  const [ showMarkets, setShowMarkets] = useState([]) 
-
+  // const [ selectedMarketType2, setSelectedMarketType2] = useState("") //後來的 market_categories
+  // const [ showMarkets, setShowMarkets] = useState([]) 
+  const selectedMarketType2 = useMarketStore((state) => state.selectedMarketType2);
+  const setSelectedMarketType2 = useMarketStore((state) => state.setSelectedMarketType2);
+  const showMarkets = useMarketStore((state) => state.showMarkets);
+  const setShowMarkets = useMarketStore((state) => state.setShowMarkets);
   // const marketNames = dbMarketData.filter(market => market.type === targetType)
                                   // .map(market => market.name);
                 // const targets = marketsObject.flatMap(m => m.mk_type2 === e.target.value ? [m.name]:[]);

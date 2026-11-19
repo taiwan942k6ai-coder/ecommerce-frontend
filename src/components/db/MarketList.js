@@ -98,7 +98,7 @@ export async function fetchProductsTypeByMarketFromDB(marketName) {
       const  dataa  = await supabase.from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
   try {
       const { data, error } = await supabase.from('market_category_relations')         
-        .select('category_id,product_categories(category_name, product_subcategories(subcategory_id,subcategory_name))')
+        .select('category_id,product_categories(category_name, product_subcategories(subcategory_id,group_name,subcategory_name))')
         .eq('market_uid', dataa.data.mkuid)
       if (error) throw error;
       console.log('抓到的商品資料集:'+data);
@@ -127,13 +127,12 @@ export async function fetchVendorInfoFromDB(vendorUID){
 }
 
 
-
 export async function fetchOffLineProductsByVendorFromDB(vendorUID){
     if (!vendorUID) return [];
     try{
       const { data, error } = await supabase
       .from('products')          // 🌟 1. 改找 vendors 資料表
-      .select('*')
+      .select('*, sellers!inner(sp_name, spuid, industry_and_markets!inner(mk_name))')
       // .eq('sp_name', vendorName) // 🌟 2. 核心：篩選出 market_name 欄位「等於」傳進來的市場名字的資料
       .eq('spuid', vendorUID) // 
       // .eq('have_stock', true)
@@ -146,6 +145,24 @@ export async function fetchOffLineProductsByVendorFromDB(vendorUID){
           console.error(`撈取 ${vendorUID} 的商品資料失敗:`, error.message);
     return [];
   }
+}
+
+export async function fetchProductsBySearch(marketname,category_id,group_name,subcategory_id){
+    if (!group_name) return [];
+
+    let query = supabase.from('products').select('*, sellers!inner(sp_name, spuid, industry_and_markets!inner(mk_name))')
+                   .eq('subcategory_id', subcategory_id).eq('have_stock', true).eq('is_visible', true).eq('is_active', true);
+    if (marketname) {
+        query = query.eq('sellers.industry_and_markets.mk_name', marketname);}
+
+    if (subcategory_id) try{ const { data, error } = await query
+                          if (error) throw error;
+                          return data;
+                        } catch (error){
+                                console.error(`搜尋失敗:`, error.message);
+                          return [];
+                        }
+    
 }
 
 
