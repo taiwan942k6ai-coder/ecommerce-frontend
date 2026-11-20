@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 function SearchPage() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
   const marketsObject = useMarketStore(state => state.marketsObject)
   const selectedMarket = useMarketStore((state) => state.selectedMarket);
+  const setSelectedMarket = useMarketStore((state) => state.setSelectedMarket);
   const selectedMarketInfo = useMarketStore((state) => state.selectedMarketInfo);
   const marketsInfo = useMarketStore(state => state.marketsInfo);
   const setMarket = useMarketStore((state) => state.setMarket);
@@ -31,26 +32,16 @@ function SearchPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const setSelectedMarketType2 = useMarketStore((state) => state.setSelectedMarketType2);
   const showMarkets = useMarketStore((state) => state.showMarkets);
   const setShowMarkets = useMarketStore((state) => state.setShowMarkets);
+  const handleSearchChange = useMarketStore((state) => state.handleSearchChange);
 
     // 💡 只有自己會用到的變數，直接宣告在這裡！
-  const [vendorCategory, setVendorCategory] = useState("");
   const [productCategoryB, setProductCategoryB] = useState("");
   const [productCategoryM, setProductCategoryM] = useState("");
   const [selectSubProductCategory, setSelectSubProductCategory] = useState("");
 
 
-
-  // 處理點擊事件的函式
-  const handleLineClick = (event) => {
-    if (!vendorInfo.isLineValid) {// 如果不合格，直接阻擋（其實按鈕反灰後本來就點不到了，這層是雙重防護）
-      event.preventDefault();  alert("店家未設定合格 LINE 連結！");  return;}
-    event.preventDefault();// 合格就正常開啟新分頁
-    window.open(vendorInfo.line, '_blank', 'noopener,noreferrer');
-  };
-
 // console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
 // console.log("【除錯】VendorDetail 接收到的 vendorInfo.today_image_url_old:", vendorInfo.today_image_url_old);
-if (isLoading) return <div>🛒 正在從資料庫撈取指定的搜尋商品...</div>;
 return (
     // <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md mb-[5vh]">     
@@ -58,56 +49,50 @@ return (
       <div className="flex justify-between items-center mb-5">
         <div>
           <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">網站位置：搜尋實體商品</span>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarket}</h2>
-          <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
-                                          {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
+          {/* <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarketInfo?.name}</h2> */}
+          {/* <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">{selectedMarketInfo?.introduce || "暫無介紹"}</h3> */}
         </div>
-        <Button variant="ghost" size="sm" onClick={() =>{resetVendor();}}> 
-          返回篩選
+        <Button variant="secondary" size="sm" onClick={() => resetVendor()}
+          className="shrink-0 text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-slate-200 rounded-lg"> 
+          ← 返回找攤販
         </Button>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-bold text-slate-700 block">🍎 切換市集</label>
+        <label className="text-sm font-bold text-slate-700 block">🏘️ 切換市集</label>
         <div className="grid grid-cols-3 gap-2">
-          <Select value={selectedMarketType2} 
-                  onValueChange={(e) => {setSelectedMarketType2(e); setProductCategoryB(""); setProductCategoryM(""); setSelectSubProductCategory("");
-                    
-                    console.log("【除錯】marketsObject是:", marketsObject);
+          <Select value={selectedMarketType2 || ""} 
+                  onValueChange={(e) => {setSelectedMarketType2(e); setSelectedMarket(""); setProductCategoryB(""); setProductCategoryM(""); setSelectSubProductCategory("")
+                    // console.log("【除錯】marketsObject是:", marketsObject);
                     const targets = marketsObject.flatMap(m => m.market_categories.category_name === e ? [m.mk_name]:[]);
-                    console.log("【除錯】targets是:", targets);
+                    // console.log("【除錯】targets是:", targets);
                     if (targets) { setShowMarkets(targets)} } }>
             <SelectTrigger><SelectValue placeholder="選擇地區..." /></SelectTrigger>
             <SelectContent position="popper" className="z-[9999]">
-              {marketsType && marketsType.map((marketType2, index) => (
-                <SelectItem key={index} value={marketType2}>{marketType2}</SelectItem>))} 
+              {marketsType && marketsType.map((marketType2) => (
+                <SelectItem key={marketType2} value={marketType2}>{marketType2}</SelectItem>))} 
             </SelectContent>
           </Select>
 
-          <Select value={selectedMarket} 
-                  onValueChange={(e) => { setShowMarkets(e);  setProductCategoryB(""); setProductCategoryM(""); setSelectSubProductCategory("")}}>
+          <Select value={selectedMarket || ""} 
+                  onValueChange={(e) => {setSelectedMarket(e); setProductCategoryB(""); setProductCategoryM(""); setSelectSubProductCategory("")
+                      handleMarketChange(e,marketsInfo)}}> 
             <SelectTrigger><SelectValue placeholder="選擇市集" /></SelectTrigger>
             <SelectContent position="popper" className="z-[9999]">
-              {/* {showMarkets &&  showMarkets.map((market) => (
-            <SelectItem key={market} value={market}> {market} </SelectItem>))} */}
-            <SelectItem key={showMarkets} value={showMarkets}> {showMarkets} </SelectItem>
+              {showMarkets &&  showMarkets.map((market) => (
+            <SelectItem key={market} value={market}> {market} </SelectItem>))}
             </SelectContent>
           </Select>
-
-          <Button onClick={() => handleMarketChange(selectedMarket,marketsInfo)}
-          className="" >
-          確認切換
-          </Button>  
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-bold text-slate-700 block">🍎 找商品</label>
+      <div className="space-y-2 mt-2">
+        <label className="text-sm font-bold text-slate-700 block">🦐 切換商品類別</label>
         <div className="grid grid-cols-3 gap-2">
           <Select value={productCategoryB?.category_id ? String(productCategoryB?.product_categories.category_name.replace(/攤$/, "")) : ""} 
                   onValueChange={(selectedId) => { 
                         const foundCat = productsType.find( (cat) => String(cat.category_id) === selectedId );
-                        setProductCategoryB(foundCat || null); setProductCategoryM(""); setSelectSubProductCategory("");  setVendorUID("");}}>
+                        setProductCategoryB(foundCat || null); setProductCategoryM(""); setSelectSubProductCategory("")}}>
             <SelectTrigger><SelectValue placeholder="選擇大類" /></SelectTrigger>
             <SelectContent position="popper" className="z-[9999]">
               {productsType.map((cat) => (
@@ -116,7 +101,7 @@ return (
           </Select>
 
           <Select value={productCategoryM?.replace(/類$/, "")} 
-                  onValueChange={(selectedGroupName) => { setProductCategoryM(selectedGroupName); setSelectSubProductCategory(""); setVendor(""); setVendorUID("");}}>
+                  onValueChange={(selectedGroupName) => { setProductCategoryM(selectedGroupName); setSelectSubProductCategory("")}}>
             <SelectTrigger><SelectValue placeholder="選擇中類" /></SelectTrigger>
             <SelectContent position="popper" className="z-[9999]">
               {productCategoryB &&   Array.from(new Set(productCategoryB?.product_categories?.product_subcategories.map((cat) => cat.group_name)))
@@ -126,10 +111,13 @@ return (
           </Select>
 
           <Select value={selectSubProductCategory?.subcategory_id ? String(selectSubProductCategory.subcategory_name) : ""} 
-                  onValueChange={(selectedSubId) => { 
+                  disabled={!productCategoryM} onValueChange={(selectedSubId) => { 
                         const foundSubcat = productCategoryB?.product_categories?.product_subcategories?.find( (subcat) => String(subcat.subcategory_id) === selectedSubId );
-                        setSelectSubProductCategory(foundSubcat || null)}} disabled={!productCategoryM}>
-            <SelectTrigger><SelectValue placeholder="選擇特定分類" /></SelectTrigger>
+                        setSelectSubProductCategory(foundSubcat || "")
+                        if (foundSubcat?.subcategory_name !== "不指定 / 其他"){handleSearchChange(selectedMarket,String(productCategoryB?.product_categories?.category_name),productCategoryM,selectedSubId)}
+                        if (foundSubcat?.subcategory_name === "不指定 / 其他"){handleSearchChange(selectedMarket,String(productCategoryB?.product_categories?.category_name),productCategoryM,null)}
+                        }} >
+            <SelectTrigger><SelectValue placeholder="選特定分類" /></SelectTrigger>
             <SelectContent position="popper" className="z-[9999]">
               {productCategoryB && productCategoryB?.product_categories?.product_subcategories.filter((subcat) => String(subcat.group_name) === productCategoryM)
               .map((subcat) => (
@@ -138,8 +126,6 @@ return (
           </Select>
         </div>
       </div>
-            
-
 
 
 
@@ -148,10 +134,12 @@ return (
         <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
             { selectedMarketType==='offline' && "🥬 今日商品與物價" }
             { selectedMarketType==='online'  && "❤️ 特色商品與價格"}
-          <span className="text-xs font-normal text-slate-400">(自動辨識，尚未製作)</span>
+          <span className="text-xs font-normal text-slate-400">(排序尚未製作)</span>
         </h3>
-        
+
+        {(isLoading) && (<div className="text-center py-8 text-slate-500"> 正在從資料庫撈取資料...</div>)}
         <div className="space-y-3">
+          {(!isLoading && (selectSubProductCategory && (!products || products.length === 0))) && (<div className="text-center py-8 text-slate-500">{selectedMarketInfo?.name}{<br/>}沒有{productCategoryM} {selectSubProductCategory.subcategory_name} 商品... </div>)}
           {products.map((product) => (
             <div key={product.id}   onClick={() => handleVendorChange(product.sellerUID)} 
                 className="cursor-pointer flex border border-slate-100 rounded-xl overflow-hidden shadow-sm hover:border-slate-200 transition-all bg-white">

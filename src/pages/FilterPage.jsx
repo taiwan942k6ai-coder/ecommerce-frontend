@@ -17,7 +17,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const productsType = useMarketStore(state => state.productsType);
   const vendors = useMarketStore(state => state.vendors);
   const isLoading = useMarketStore(state => state.isLoading);
-  // const setPage = useMarketStore((state) => state.setPage);
+  const setPage = useMarketStore((state) => state.setPage);
   const setVendor = useMarketStore((state) => state.setVendor);
   const setVendorUID = useMarketStore((state) => state.setVendorUID);
   const setProduct = useMarketStore((state) => state.setProduct);
@@ -71,8 +71,13 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
       {/* 中間的地圖與下拉選單 HTML 保持不變 ... */}
             <div className="w-full h-44 bg-slate-100 rounded-xl overflow-hidden mb-6 border border-slate-200 flex items-center justify-center relative">
               {/* <img src="https://unsplash.com" alt="市場地圖" className="w-full h-full object-cover opacity-70" /> */}
-              <iframe src={selectedMarketInfo.url} width="600" height="450" style={{border:0}} allowFullScreen="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin"></iframe>  
-              
+              {selectedMarketInfo?.url?.trim() ? (
+              <iframe src={selectedMarketInfo.url.trim()}  className="w-full h-[300px] sm:h-[450px] rounded-xl border-0"
+                      allowFullScreen  loading="lazy"  referrerPolicy="strict-origin-when-cross-origin"/>) : (
+              <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-[#f6efe8]">
+                <img  src="https://yxshqhkjfkljnnhwgbod.supabase.co/storage/v1/object/public/shop-images/NoMarketImage.jpg"
+                      alt="此市集地圖尚未建立"  className="w-full h-auto object-cover"/></div>)}
+              {/* <iframe src={selectedMarketInfo.url || "https://yxshqhkjfkljnnhwgbod.supabase.co/storage/v1/object/public/shop-images/NoMarketImage.jpg"} width="600" height="450" style={{border:0}} allowFullScreen="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin"></iframe>   */}
               {/* <img src={selectedMarketInfo.url} alt="市場地圖" className="w-full h-full object-cover opacity-70" /> */}
               {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4 "></div> */}
               <div className="absolute inset-0 bg-black/1 flex items-end justify-center pb- p-4 pointer-events-none">
@@ -112,31 +117,27 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
               </div>
 
 
-
-
-
-
               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 block">🍎 找商品 (不指定 實際上是未分類)</label>
+                <label className="text-sm font-bold text-slate-700 block">🍎 找商品</label>
                 <div className="grid grid-cols-3 gap-2">
                   <Select value={productCategoryB?.category_id ? String(productCategoryB?.product_categories.category_name.replace(/攤$/, "")) : ""} 
                           onValueChange={(selectedId) => { //foundCat ||null
                                 const foundCat = productsType.find( (cat) => String(cat.category_id) === selectedId );
                                 setProductCategoryB(foundCat || ""); setProductCategoryM(""); setSelectSubProductCategory(""); setVendor(""); setVendorUID("");}}>
-                    <SelectTrigger><SelectValue placeholder="選擇大類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選擇大類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productsType.map((cat) => (
                         <SelectItem key={cat.category_id} value={String(cat.category_id)}>{cat.product_categories.category_name?.replace(/攤$/, "")}</SelectItem>))} 
                     </SelectContent>
                   </Select>
 
-                  <Select value={productCategoryM?.replace(/類$/, "") ?? ""} 
+                  <Select value={productCategoryM ?? ""} 
                           onValueChange={(selectedGroupName) => { setProductCategoryM(selectedGroupName); setSelectSubProductCategory(""); setVendor(""); setVendorUID("");}}>
-                    <SelectTrigger><SelectValue placeholder="選擇中類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選擇中類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productCategoryB &&   Array.from(new Set(productCategoryB?.product_categories?.product_subcategories.map((cat) => cat.group_name)))
                                                   .map((groupName) => (
-                    <SelectItem key={groupName} value={String(groupName)}> {groupName?.replace(/類$/, "")} </SelectItem>))}
+                    <SelectItem key={groupName} value={String(groupName)}> {groupName} </SelectItem>))}
                     </SelectContent>
                   </Select>
 
@@ -144,7 +145,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                           onValueChange={(selectedSubId) => { 
                                 const foundSubcat = productCategoryB?.product_categories?.product_subcategories?.find( (subcat) => String(subcat.subcategory_id) === selectedSubId );
                                 setSelectSubProductCategory(foundSubcat || null)}} disabled={!productCategoryM}>
-                    <SelectTrigger><SelectValue placeholder="選擇特定分類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選特定分類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productCategoryB && productCategoryB?.product_categories?.product_subcategories.filter((subcat) => String(subcat.group_name) === productCategoryM)
                       .map((subcat) => (
@@ -155,7 +156,12 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                 <Button 
                 className="w-full mt-0 bg-slate-900 hover:bg-slate-800 text-white py-6 text-base rounded-xl font-medium shadow-md"
                 disabled={ (!productCategoryB || !productCategoryM)}    onClick={()=>{
-                  handleSearchChange(selectedMarket,String(productCategoryB?.product_categories.category_name),productCategoryM,selectSubProductCategory.subcategory_id)}} >
+                        if (selectSubProductCategory?.subcategory_name !== "不指定 / 其他"){handleSearchChange(selectedMarket,String(productCategoryB?.product_categories?.category_name),productCategoryM,selectSubProductCategory.subcategory_id)}
+                        if (selectSubProductCategory?.subcategory_name === "不指定 / 其他"){handleSearchChange(selectedMarket,String(productCategoryB?.product_categories?.category_name),productCategoryM,null)}
+                  
+                        if(!selectSubProductCategory.subcategory_id){ console.log("【除錯】不是NULL是?", selectSubProductCategory.subcategory_id);
+                    handleSearchChange(selectedMarket,String(productCategoryB?.product_categories.category_name),productCategoryM,null)}
+                  setPage("SearchPage")}} >
                 🚀 查詢 (頁面還沒做完)
                 </Button>
               </div>
@@ -177,14 +183,6 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
 
     </div>
   );
-
-
-
-
-
-
-
-
 
 
 
@@ -222,9 +220,6 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
           </Button>
         ))}
       </div>
-
-
-
     </div>
   );
 }

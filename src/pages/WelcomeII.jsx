@@ -22,6 +22,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
 
   // const [ selectedMarketType2, setSelectedMarketType2] = useState("") //後來的 market_categories
   // const [ showMarkets, setShowMarkets] = useState([]) 
+  const setPage = useMarketStore((state) => state.setPage);
   const selectedMarketType2 = useMarketStore((state) => state.selectedMarketType2);
   const setSelectedMarketType2 = useMarketStore((state) => state.setSelectedMarketType2);
   const showMarkets = useMarketStore((state) => state.showMarkets);
@@ -71,7 +72,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
         {showMarkets.map((market) => (
           <Button  key={market}  variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            onClick={() => handleMarketChange(market,marketsInfo)} >     {/* market 還在思考要不要換成UID，台灣會有重複的市場名子嗎? */}
+            onClick={() => {handleMarketChange(market,marketsInfo); setPage("FilterPage")}} >     {/* market 還在思考要不要換成UID，台灣會有重複的市場名子嗎? */}
             <span>{market}</span>
             <span className="text-slate-400">→</span>
           </Button>

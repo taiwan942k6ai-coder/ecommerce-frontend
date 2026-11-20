@@ -21,7 +21,11 @@ export function Navbar() {  // 💡 使用 Named Export
       <div 
         className="text-xl font-bold text-slate-800 cursor-pointer flex items-center gap-2"
         // onClick={() => { setPage(1); resetMarket(); }} //  呼叫金庫的功能
-        onClick={() => { resetMarket(); }} 
+        onClick={() => { 
+              console.log("1. 按鈕被點擊了");
+    resetMarket();
+    console.log("2. resetMarket 執行完畢，現在的 showMarkets 是：", useMarketStore.getState().showMarkets);
+         }} 
       >
       <img  src="/市集小幫手.jpg"  alt="市集小幫手 LOGO" 
             style={{ width: '200px', height: 'auto' }} />

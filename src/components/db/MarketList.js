@@ -166,6 +166,24 @@ export async function fetchProductsBySearch(marketname,category_id,group_name,su
 }
 
 
+
+export async function fetchProductsBySearchNoSubID(marketname,category_id,group_name){
+    if (!group_name) return [];
+
+    let query = supabase.from('products').select('*, sellers!inner(sp_name, spuid, industry_and_markets!inner(mk_name)),product_subcategories!inner(category_id)')
+                   .eq('product_subcategories.group_name', group_name).eq('have_stock', true).eq('is_visible', true).eq('is_active', true);
+    if (marketname) {
+        query = query.eq('sellers.industry_and_markets.mk_name', marketname);}
+
+    if (category_id) try{ const { data, error } = await query
+                          if (error) throw error;
+                          return data;
+                        } catch (error){
+                                console.error(`搜尋失敗:`, error.message);
+                          return [];
+                        }
+    
+}
 // export async function fetchVendorUIDFromDB(vendorName){
 //     if (!vendorName) return [];
 //     try{
