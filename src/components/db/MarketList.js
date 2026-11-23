@@ -34,7 +34,7 @@ export async function fetchMarketsFromDB2(marketType) {
     const { data, error } = await supabase
       .from('industry_and_markets')
       // .select('mk_name, mk_introduce, map_address, market_categories(category_name), mkuid') 
-      .select('mk_name, mk_introduce, map_address, market_categories(category_name)') 
+      .select('mk_name, mk_introduce, map_address, market_categories(category_name),mkuid') 
       .eq('mk_type',marketType)
       .eq('is_visible',true)
       .order('mk_name', { ascending: false }); // 按照 name 欄位排序
@@ -51,11 +51,11 @@ export async function fetchMarketsFromDB2(marketType) {
  * @param {string} marketName - 被選中的市場名字 (例如: "2C電商")
  * @returns {Promise<Array>} 該市場的攤販陣列
  */
-export async function fetchVendorsByMarketFromDB(marketName) {
+export async function fetchVendorsByMarketFromDB(marketName,marketUID) {
   if (!marketName) return []; // 安全檢查：如果沒傳市場名字，直接回傳空陣列
 //改UID加這行，為了效能應該要在改善DB結構
-      const  dataa  = await supabase
-      .from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
+      // const  dataa  = await supabase
+      // .from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single() 改UID拿掉
 //   try {
 //     const { data, error } = await supabase
 //       .from('shops')          // 🌟 1. 改找 vendors 資料表
@@ -76,7 +76,7 @@ export async function fetchVendorsByMarketFromDB(marketName) {
       .from('sellers')          // 🌟 1. 改找 vendors 資料表
 // .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name)')
       .select('sp_name,product_categories(category_name),spuid')
-      .eq('mkuid', dataa.data.mkuid)
+      .eq('mkuid', marketUID)
       .eq('is_visible',true).eq('is_active',true)
       // .eq('mk_name', marketName) // 🌟 2. 核心：篩選出 market_name 欄位「等於」傳進來的市場名字的資料
       // .order('vid', { ascending: true }); // 假設攤販有自己的 id 叫 vid
@@ -92,14 +92,14 @@ export async function fetchVendorsByMarketFromDB(marketName) {
  * @param {string} marketName - 被選中的市場名字 (例如: "2C電商")
  * @returns {Promise<Array>} 該市場的商品陣列
  */
-export async function fetchProductsTypeByMarketFromDB(marketName) {
+export async function fetchProductsTypeByMarketFromDB(marketName,marketUID) {
   if (!marketName) return []; // 安全檢查：如果沒傳市場名字，直接回傳空陣列
 //改UID加這行，為了效能應該要在改善DB結構
-      const  dataa  = await supabase.from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
+      // const  dataa  = await supabase.from('industry_and_markets').select('mkuid').eq('mk_name', marketName).single()
   try {
       const { data, error } = await supabase.from('market_category_relations')         
         .select('category_id,product_categories(category_name, product_subcategories(subcategory_id,group_name,subcategory_name))')
-        .eq('market_uid', dataa.data.mkuid)
+        .eq('market_uid', marketUID)
       if (error) throw error;
       console.log('抓到的商品資料集:'+data);
       return data;
@@ -147,13 +147,13 @@ export async function fetchOffLineProductsByVendorFromDB(vendorUID){
   }
 }
 
-export async function fetchProductsBySearch(marketname,category_id,group_name,subcategory_id){
+export async function fetchProductsBySearch(marketUID,category_id,group_name,subcategory_id){
     if (!group_name) return [];
 
     let query = supabase.from('products').select('*, sellers!inner(sp_name, spuid, industry_and_markets!inner(mk_name))')
                    .eq('subcategory_id', subcategory_id).eq('have_stock', true).eq('is_visible', true).eq('is_active', true);
-    if (marketname) {
-        query = query.eq('sellers.industry_and_markets.mk_name', marketname);}
+    if (marketUID) {
+        query = query.eq('sellers.industry_and_markets.mkuid', marketUID);}
 
     if (subcategory_id) try{ const { data, error } = await query
                           if (error) throw error;
@@ -167,13 +167,13 @@ export async function fetchProductsBySearch(marketname,category_id,group_name,su
 
 
 
-export async function fetchProductsBySearchNoSubID(marketname,category_id,group_name){
+export async function fetchProductsBySearchNoSubID(marketUID,category_id,group_name){
     if (!group_name) return [];
 
     let query = supabase.from('products').select('*, sellers!inner(sp_name, spuid, industry_and_markets!inner(mk_name)),product_subcategories!inner(category_id)')
                    .eq('product_subcategories.group_name', group_name).eq('have_stock', true).eq('is_visible', true).eq('is_active', true);
-    if (marketname) {
-        query = query.eq('sellers.industry_and_markets.mk_name', marketname);}
+    if (marketUID) {
+        query = query.eq('sellers.industry_and_markets.mkuid', marketUID);}
 
     if (category_id) try{ const { data, error } = await query
                           if (error) throw error;

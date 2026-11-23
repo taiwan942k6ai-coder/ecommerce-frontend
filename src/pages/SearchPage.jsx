@@ -74,7 +74,7 @@ return (
             </SelectContent>
           </Select>
 
-          <Select value={selectedMarket || ""} 
+          <Select value={selectedMarketInfo?.name || ""} 
                   onValueChange={(e) => {setSelectedMarket(e); setProductCategoryB(""); setProductCategoryM(""); setSelectSubProductCategory("")
                       handleMarketChange(e,marketsInfo)}}> 
             <SelectTrigger><SelectValue placeholder="選擇市集" /></SelectTrigger>

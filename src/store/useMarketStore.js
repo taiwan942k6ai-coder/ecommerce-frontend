@@ -8,6 +8,7 @@ export const useMarketStore = create((set) => ({
 
   selectedMarket: "",
   selectedMarketInfo:{
+    uid:"",
     name:"",
     introduce:"",
     vendors: [],//目前是前端運算，看是否要改成DB直接給
@@ -63,18 +64,18 @@ export const useMarketStore = create((set) => ({
   //   selectedVendor: "",
   //   selectedProduct: "",
   // }),  // DB功能 B：使用者點擊市場時觸發
-  handleMarketChange: async (marketName,marketsInfo) => {
+  handleMarketChange: async (marketUID,marketsInfo) => {
     const marketInfo = {
-      // uid:      marketsInfo[marketName].uid,
-      name:       marketsInfo[marketName]?.name,
-      introduce:  marketsInfo[marketName]?.introduce,
-      url:        marketsInfo[marketName]?.url,
+      uid:      marketsInfo[marketUID]?.uid,
+      name:       marketsInfo[marketUID]?.name,
+      introduce:  marketsInfo[marketUID]?.introduce,
+      url:        marketsInfo[marketUID]?.url,
       // vendors:    marketsInfo[marketName].vendors,
       // vendorUIDs: marketsInfo[marketName].vendorUIDs,
     };
     
     set({ 
-    selectedMarket: marketName, 
+    selectedMarket: marketUID, 
     selectedMarketInfo:marketInfo,
     selectedVendor: "",
     selectedProduct: "",
@@ -85,9 +86,9 @@ export const useMarketStore = create((set) => ({
     console.log("選定的市集資料：", marketInfo);
     // ➔ 順便直接去 DB 撈出這個市場專屬的攤販清單！
     console.log("當前查詢的市集名稱為:", JSON.stringify(marketInfo.name));
-    const dbVendorsData = await fetchVendorsByMarketFromDB(marketName); // 傳入剛剛選的市場名字
+    const dbVendorsData = await fetchVendorsByMarketFromDB(marketsInfo[marketUID]?.uid, marketUID); // 傳入剛剛選的市場名字
     console.log("抓攤販資料，資料庫回傳的原始資料是：", dbVendorsData);
-    const dbProductsTypeData = await fetchProductsTypeByMarketFromDB(marketName);
+    const dbProductsTypeData = await fetchProductsTypeByMarketFromDB(marketsInfo[marketUID]?.uid, marketUID);
 console.log("抓商品資料，資料庫回傳的原始資料是：", dbProductsTypeData);
     // ==========================================
     // 🌟 核心處理：將 Supabase 的扁平陣列，整理成 UI 需要的分類資料
@@ -313,17 +314,17 @@ console.log('DB轉換資料:', dbDateString);
   // },
 
 
-    handleSearchChange: async (selectedMarket,B,M,S) => {set({ 
+    handleSearchChange: async (selectedMarketUID,B,M,S) => {set({ 
     selectedProduct: "",//這個變數從來沒用到?
     isLoading: true,
     });
-
+console.log(" selectedMarketUID:", selectedMarketUID);
     var dbProductsData;
     if (S !== null){  const [ dbProductsData1] = await Promise.all([
-      fetchProductsBySearch(selectedMarket,B,M,S)
+      fetchProductsBySearch(selectedMarketUID,B,M,S)
     ]);  dbProductsData = dbProductsData1}
     if (S === null){  const [ dbProductsData2] = await Promise.all([
-      fetchProductsBySearchNoSubID(selectedMarket,B,M)
+      fetchProductsBySearchNoSubID(selectedMarketUID,B,M)
     ]);  dbProductsData = dbProductsData2}
 
 
@@ -377,17 +378,15 @@ console.log('DB轉換資料:', dbDateString);
 
     const marketsInfoObject = {};// 核心改動：直接用市場名稱當 Key 塞進物件裡
     dbMarketData.forEach(info =>{
-      // const marketUID = info.mkuid  || "沒市集UID";
+      const marketUID = info.mkuid  || "沒市集UID";
       const marketName = info.mk_name  || "沒市集名稱";
       const marketIntroduce = info.mk_introduce  || "沒市集介紹";
       const marketShopTypes = info.shop_types  || "沒子項目陣列";
       const marketURL = info.map_address  || "";//拿掉字串沒地圖
       // 2. 核心改動：直接用市場名稱當 Key 塞進物件裡
       console.log("正規化DEBUG，原始資料 marketShopTypes是：", info.shop_types  || "沒子項目陣列");
-      marketsInfoObject[marketName] = { name:marketName, introduce:marketIntroduce, vendors:marketShopTypes, url:marketURL
-        // , uid:marketUID   先拿掉，需要思考要不用這個值
-      };
-    })
+      marketsInfoObject[marketUID] = { name:marketName, introduce:marketIntroduce, vendors:marketShopTypes, url:marketURL  , uid:marketUID
+      };  })
     set({ marketsInfo: marketsInfoObject });
   },
 

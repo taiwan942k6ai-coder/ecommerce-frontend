@@ -52,7 +52,7 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
             <div className="flex-1">{/* 右邊：下拉選單 */}
             <select  value={selectedMarketType2}
                 onChange={(e) => {setSelectedMarketType2(e.target.value);  
-                    const targets = marketsObject.flatMap(m => m.market_categories.category_name === e.target.value ? [m.mk_name]:[]);
+                    const targets = marketsObject.flatMap(m => m.market_categories.category_name === e.target.value ? [m]:[]);
                     if (targets) { setShowMarkets(targets)}  } }
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none bg-white h-10">
                 <option value="">下拉選單...</option>
@@ -70,10 +70,10 @@ function Welcome() {  // 💡 使用Zustand  直接去金庫把「切換市場�
       {/* 市場選擇條 */}
       <div className="grid grid-cols-1 gap-3 w-full">
         {showMarkets.map((market) => (
-          <Button  key={market}  variant="outline" 
+          <Button  key={market.mkuid}  variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            onClick={() => {handleMarketChange(market,marketsInfo); setPage("FilterPage")}} >     {/* market 還在思考要不要換成UID，台灣會有重複的市場名子嗎? */}
-            <span>{market}</span>
+            onClick={() => {handleMarketChange(market.mkuid,marketsInfo); setPage("FilterPage")}} >     {/* market 還在思考要不要換成UID，台灣會有重複的市場名子嗎? */}
+            <span>{market.mk_name}</span>
             <span className="text-slate-400">→</span>
           </Button>
         ))}

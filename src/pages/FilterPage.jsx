@@ -52,14 +52,14 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
 // };
 
   console.log("【除錯】FilterPage 接收到的原始 vendors 陣列是:", vendors);
-  if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedMarket}】 的攤商資料ing...</div>;
+  if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedMarketInfo?.name}】 的攤商資料ing...</div>;
   
   if (selectedMarketType==='offline') return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl p-6 shadow-md mb-[5vh]">      
       <div className="flex justify-between items-center mb-5">
         <div>
           <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">網站位置：實體市集</span>
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarket}</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarketInfo?.name}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                           {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
         </div>
@@ -82,7 +82,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
               {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4 "></div> */}
               <div className="absolute inset-0 bg-black/1 flex items-end justify-center pb- p-4 pointer-events-none">
                 <span className="bg-white/95 text-slate-800 px-4 py-2 rounded-xl text-sm font-semibold shadow">
-                  🗺️ 「{selectedMarket}」地圖位置
+                  🗺️ 「{selectedMarketInfo?.name}」地圖位置
                 </span>
               </div>
             </div>
