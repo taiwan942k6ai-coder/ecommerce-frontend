@@ -114,7 +114,8 @@ export async function fetchVendorInfoFromDB(vendorUID){
       const { data, error } = await supabase
       .from('sellers') 
       .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name)')
-      // .eq('name', vendorName) 
+      // .select('sp_name,sp_introduce,poc,phone,line,open_time,other,today_image_url_old,today_image_update_at,updated_at,score_good,score_total,spuid,product_categories(category_name),  products (pd_reviews( rwuid, comment, tag1,tag2,tag3,tag4,tag7,created_at ))')
+      // .eq('', true)   
       .eq('spuid', vendorUID) 
       .eq('is_visible',true)
       .eq('is_active',true)
@@ -184,6 +185,29 @@ export async function fetchProductsBySearchNoSubID(marketUID,category_id,group_n
                         }
     
 }
+
+
+export async function fetchReviewsTagCount(vendorUID){
+      if (!vendorUID) return [];
+
+      try{ const { data, error } = await supabase
+          .rpc('get_seller_tag_counts', { 
+            target_spuid: vendorUID, // 底下可以隨時改天數，例如 7, 10, 30
+            days_limit: 10 })
+          .single()
+  
+        if (error) throw error;
+        return data;
+      } catch (error){
+              console.error(`抓TAGCOUNT失敗:`, error.message);
+        return [];
+      }
+                        
+  supabase.rpc('get_seller_tag_counts', { 
+      target_spuid: vendorUID, // 底下可以隨時改天數，例如 7, 10, 30
+      days_limit: 10 })
+    .single()
+  }
 // export async function fetchVendorUIDFromDB(vendorName){
 //     if (!vendorName) return [];
 //     try{

@@ -24,7 +24,7 @@ function SearchPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
   const isLoading = useMarketStore(state => state.isLoading);
   const handleMarketChange = useMarketStore((state) => state.handleMarketChange);
   const handleVendorChange = useMarketStore((state) => state.handleVendorChange);
-  // const setVendor = useMarketStore((state) => state.setVendor);
+  const setVendor = useMarketStore((state) => state.setVendor);
   // const setProduct = useMarketStore((state) => state.setProduct);
   const resetVendor = useMarketStore((state) => state.resetVendor);
 
@@ -130,7 +130,7 @@ return (
 
 
       {/* 商品串列區塊 */}
-      <div className="p-5">
+      <div className="p-1 mt-4">
         <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
             { selectedMarketType==='offline' && "🥬 今日商品與物價" }
             { selectedMarketType==='online'  && "❤️ 特色商品與價格"}
@@ -141,7 +141,7 @@ return (
         <div className="space-y-3">
           {(!isLoading && (selectSubProductCategory && (!products || products.length === 0))) && (<div className="text-center py-8 text-slate-500">{selectedMarketInfo?.name}{<br/>}沒有{productCategoryM} {selectSubProductCategory.subcategory_name} 商品... </div>)}
           {products.map((product) => (
-            <div key={product.id}   onClick={() => handleVendorChange(product.sellerUID)} 
+            <div key={product.id}   onClick={() => {setVendor(product.seller) ;handleVendorChange(product.sellerUID)}} 
                 className="cursor-pointer flex border border-slate-100 rounded-xl overflow-hidden shadow-sm hover:border-slate-200 transition-all bg-white">
               {/* 左圖 */}
               <div className="w-24 h-24 flex-shrink-0 bg-slate-100">

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB, fetchProductsBySearch, fetchProductsBySearchNoSubID } from '../components/db/MarketList'; 
+import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB, fetchProductsBySearch, fetchProductsBySearchNoSubID, fetchReviewsTagCount } from '../components/db/MarketList'; 
 
 export const useMarketStore = create((set) => ({
   // #region       💰 1. 這裡放所有的全域變數 (State)
@@ -130,12 +130,14 @@ console.log("抓商品資料，資料庫回傳的原始資料是：", dbProducts
     // ➔ 順便直接去 DB 撈出這個市場專屬的攤販清單！
     // console.log("當前查詢的商店為:", JSON.stringify(UIDData.spuid));
     // const dbProductsData = await fetchOffLineProductsByVendorFromDB(vendorName); // 傳入剛剛選的市場名字
-    const [dbVendorInfoData, dbProductsData] = await Promise.all([
+    const [dbVendorInfoData, dbProductsData, dbReviewsTagCount] = await Promise.all([
       fetchVendorInfoFromDB(vendorUID),
-      fetchOffLineProductsByVendorFromDB(vendorUID)
+      fetchOffLineProductsByVendorFromDB(vendorUID),
+      fetchReviewsTagCount(vendorUID)
     ]);
     console.log("資料庫回傳的店家資訊原始資料是：", dbVendorInfoData);
     console.log("資料庫回傳的所有商品原始資料是：", dbProductsData);
+    console.log("資料庫回傳的TagCount是：", dbReviewsTagCount);
 
     if (!dbVendorInfoData || dbVendorInfoData.length === 0) {
       //dbProductsData 還是會被顯示出來
@@ -204,7 +206,8 @@ console.log("抓商品資料，資料庫回傳的原始資料是：", dbProducts
       isLineValid: dbVendorInfoData[0].line && dbVendorInfoData[0].line.trim() !== "" && lineUrlPattern.test(dbVendorInfoData[0].line),
       rating: rate || "計算、畫面待調整",
       reviewCount: dbVendorInfoData[0].reviewCount || "未做",
-      today_image_url_old: dbVendorInfoData[0].today_image_url_old || "https://unsplash.com"
+      today_image_url_old: dbVendorInfoData[0].today_image_url_old || "https://unsplash.com",
+      tagCount: dbReviewsTagCount
     };
     set({selectedVendorInfo:vendorInfoObject});
 
@@ -216,19 +219,20 @@ console.log('DB轉換資料:', dbDateString);
 //  { id: 3, name: "網室溫室番茄", price: 90, unit: "斤", note: "微酸帶甜", quality: 4.2, likes: 18, dislikes: 4, image: "https://unsplash.com" },
     const productsArray = [];
     dbProductsData.forEach(product => {
-      const productType = product.pd_type || "未分類";//正規化後可以加進來，以後搜尋用
+      const productUID = product.pduid || "沒UID";
+      const productType = product.subcategory_id || "未分類";
       const productName = product.pd_name || "沒名稱";
       const productPrice = product.price_origin || "沒價格";
       const productUnit = product.unit || "沒單位";
       const productNote = product.pd_introduce || "沒介紹";
       const productSeller = product.sellers.sp_name || "沒店家名稱";
       const productSellerUID = product.sellers.spuid || "沒店家UID";
-      const productQuality = (product.score_good/product.score_totalXXX) || "這欄位會拿掉或修改";
+      const productQuality = (product.score_good/product.score_totalXXX) || "會拿掉或修改";
       const productLikes = product.score_good || "沒讚數";
       const productDislikes = (product.score_total-product.score_good) || "要拿掉";
       const productImage = product.image_url || "沒照片";
 
-      let thisProduct = { id:productName, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage, seller:productSeller, sellerUID:productSellerUID}
+      let thisProduct = { id:productUID, name:productName, price:productPrice, unit:productUnit, note:productNote, quality:productQuality, likes:productLikes, dislikes:productDislikes, image:productImage, seller:productSeller, sellerUID:productSellerUID, subtype:productType,}
       productsArray.push(thisProduct);});
 
     set({ 

@@ -92,7 +92,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                 <label className="text-sm font-bold text-slate-700 block">🔍 找攤販</label>
                 <div className="grid grid-cols-2 gap-2">
                   <Select value={vendorCategory} onValueChange={(val) => { setVendorCategory(val); setVendor(""); setVendorUID("");}}>
-                    <SelectTrigger><SelectValue placeholder="選擇攤販 (如:蔬菜攤)" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder=" (如:蔬菜攤)" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]"> {/* 🌟 加上 popper 防阻擋 */}
                       {/* 🌟 改用純陣列去 map */}
                       {vendors.map((cat) => (
@@ -124,7 +124,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                           onValueChange={(selectedId) => { //foundCat ||null
                                 const foundCat = productsType.find( (cat) => String(cat.category_id) === selectedId );
                                 setProductCategoryB(foundCat || ""); setProductCategoryM(""); setSelectSubProductCategory(""); setVendor(""); setVendorUID("");}}>
-                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選擇大類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1  w-full"><SelectValue placeholder="選擇大類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productsType.map((cat) => (
                         <SelectItem key={cat.category_id} value={String(cat.category_id)}>{cat.product_categories.category_name?.replace(/攤$/, "")}</SelectItem>))} 
@@ -133,7 +133,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
 
                   <Select value={productCategoryM ?? ""} 
                           onValueChange={(selectedGroupName) => { setProductCategoryM(selectedGroupName); setSelectSubProductCategory(""); setVendor(""); setVendorUID("");}}>
-                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選擇中類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1  w-full"><SelectValue placeholder="選擇中類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productCategoryB &&   Array.from(new Set(productCategoryB?.product_categories?.product_subcategories.map((cat) => cat.group_name)))
                                                   .map((groupName) => (
@@ -145,7 +145,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                           onValueChange={(selectedSubId) => { 
                                 const foundSubcat = productCategoryB?.product_categories?.product_subcategories?.find( (subcat) => String(subcat.subcategory_id) === selectedSubId );
                                 setSelectSubProductCategory(foundSubcat || null)}} disabled={!productCategoryM}>
-                    <SelectTrigger className="col-span-1"  w-full><SelectValue placeholder="選特定分類" /></SelectTrigger>
+                    <SelectTrigger className="col-span-1  w-full"><SelectValue placeholder="選特定分類" /></SelectTrigger>
                     <SelectContent position="popper" className="z-[9999]">
                       {productCategoryB && productCategoryB?.product_categories?.product_subcategories.filter((subcat) => String(subcat.group_name) === productCategoryM)
                       .map((subcat) => (
@@ -162,7 +162,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                         if(!selectSubProductCategory.subcategory_id){ console.log("【除錯】不是NULL是?", selectSubProductCategory.subcategory_id);
                     handleSearchChange(selectedMarket,String(productCategoryB?.product_categories.category_name),productCategoryM,null)}
                   setPage("SearchPage")}} >
-                🚀 查詢 (頁面還沒做完)
+                🚀 查詢 (還沒做完)
                 </Button>
               </div>
             </div>
