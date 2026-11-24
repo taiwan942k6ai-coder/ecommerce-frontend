@@ -96,21 +96,9 @@ function App() {  // 💡 使用Zustand 從金庫裡只拿自己需要的 step �
     {/* NAVBAR 區域（裡面有用到全域變數的元件，等等也直接去金庫拿） */}
     {/* 🌟 超級乾淨！Navbar 自己去跟金庫溝通了，App 完全不用插手 */}{/* NAVBAR 區域：固定在最上方 */}
     <Navbar />
-    
-
-
     {/* 主要內容區域：        - items-center: 水平置中
         - overflow-y-auto: 這裡就是內部的獨立捲軸！內容超過時會由這裡負責滑動    */}
     <main className="flex-1 flex flex-col items-center p-6 overflow-y-auto">
-      
-      {/* 🌟 關鍵外包層：
-          - min-h-full: 確保內容少時能撐滿高度
-          - flex flex-col justify-center: 只有在內容少時才垂直置中
-          - w-full max-w-md: 限制最大寬度，維持原本的 UI 比例
-
-        - flex-1: 自動填滿 Navbar 剩下的所有空間
-        - overflow-y-auto: 如果元件內容（例如市場按鈕太多）超出範圍，只有這個區域會自己出現捲軸，外層網頁不會滑動        */}
-    {/* <div className="min-h-screen bg-slate-50 flex flex-col font-sans"> */}
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md">
         {/* 🌟 乾乾淨淨！再也不用寫 Props 傳功能了 */}
         {page === "Welcome" && <Welcome />}
@@ -125,3 +113,12 @@ function App() {  // 💡 使用Zustand 從金庫裡只拿自己需要的 step �
 }
 
 export default App;
+
+      {/* 🌟 關鍵外包層：
+          - min-h-full: 確保內容少時能撐滿高度
+          - flex flex-col justify-center: 只有在內容少時才垂直置中
+          - w-full max-w-md: 限制最大寬度，維持原本的 UI 比例
+
+        - flex-1: 自動填滿 Navbar 剩下的所有空間
+        - overflow-y-auto: 如果元件內容（例如市場按鈕太多）超出範圍，只有這個區域會自己出現捲軸，外層網頁不會滑動        */}
+    {/* <div className="min-h-screen bg-slate-50 flex flex-col font-sans"> */}

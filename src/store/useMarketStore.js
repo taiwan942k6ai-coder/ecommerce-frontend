@@ -1,12 +1,31 @@
 import { create } from 'zustand'
 import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB, fetchProductsTypeByMarketFromDB, fetchOffLineProductsByVendorFromDB, fetchProductsBySearch, fetchProductsBySearchNoSubID, fetchReviewsTagCount } from '../components/db/MarketList'; 
 
-export const useMarketStore = create((set) => ({
+// 輔助小工具：讀取目前網址上的 ?seller=xxx
+const getParamsFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+ return {
+    vendorId: params.get('vendor') || null,   // 讀取 ?vendor=...
+    marketType: params.get('market') || null,   // 讀取 &market=...
+    // marketId: params.get('market') || null,   // 讀取 &market=...
+    // tab: params.get('tab') || 'products',     // 讀取 &tab=...（可給預設值）
+  };
+};
+
+
+// export const useMarketStore = create((set, get) => ({
+  export const useMarketStore = create((set, get) => {
+    // 檢查剛進網站時，網址是否已經帶有 ?seller=xxx
+  const { vendorId, marketType } = getParamsFromUrl();
+  
+  return {
   // #region       💰 1. 這裡放所有的全域變數 (State)
-  page: "Welcome",
-  selectedMarketType:"",
+  // page:  'Welcome',
+  page: vendorId ? 'VendorDetail' : 'Welcome',
+  selectedMarketType: vendorId ? marketType : "",
 
   selectedMarket: "",
+  // selectedMarket: vendorId ? marketId : "",
   selectedMarketInfo:{
     uid:"",
     name:"",
@@ -15,7 +34,7 @@ export const useMarketStore = create((set) => ({
     url:"",
   },
   selectedVendor: "",
-  selectedVendorUID: "",
+  selectedVendorUID:  vendorId ? vendorId : "",
   selectedVendorInfo:{
       name: "",
       introduce:  "",
@@ -45,7 +64,17 @@ export const useMarketStore = create((set) => ({
   // #endregion
 
   // 🛠️ 2. 底下放所有修改變數的功能 (Actions)
-  setPage: (nextPage) => set({ page: nextPage }),
+  // setPage: (nextPage) => set({ page: nextPage }),
+     setPage: (newPage) => {
+      const url = new URL(window.location.href);
+      // 如果不是去詳細頁，就把網址上的 ?seller=xxx 清掉
+      if (newPage !== 'VendorDetail') {
+        url.searchParams.delete('vendor');
+        url.searchParams.delete('market');
+        window.history.pushState({}, '', url);
+      }
+      set({ page: newPage });
+    },
   setMarketType:(selectType) => set({ selectedMarketType: selectType}),
   setVendor:(userSelectVendor) => set({selectedVendor: userSelectVendor}),
   setVendorUID:(userSelectVendorUID) => set({selectedVendorUID: userSelectVendorUID}),
@@ -65,6 +94,8 @@ export const useMarketStore = create((set) => ({
   //   selectedProduct: "",
   // }),  // DB功能 B：使用者點擊市場時觸發
   handleMarketChange: async (marketUID,marketsInfo) => {
+    // if (marketsInfo===null){}
+
     const marketInfo = {
       uid:      marketsInfo[marketUID]?.uid,
       name:       marketsInfo[marketUID]?.name,
@@ -119,7 +150,15 @@ console.log("抓商品資料，資料庫回傳的原始資料是：", dbProducts
   //   page: "VendorDetail",
   //   selectedProduct: "",
   // }),
-  handleVendorChange: async (vendorUID) => {set({ 
+  handleVendorChange: async (vendorUID) => {
+          // 更新網址列，不重新整理網頁
+      const url = new URL(window.location.href);
+      url.searchParams.set('vendor', vendorUID);
+      url.searchParams.set('market', get().selectedMarketType);
+      window.history.pushState({}, '', url);
+    
+    
+    set({ 
     selectedProduct: "",
     page: "VendorDetail",
     isLoading: true,
@@ -275,6 +314,9 @@ console.log('DB轉換資料:', dbDateString);
     selectedProduct: "",
     selectedMarketType2:"",
   }),
+
+
+
   resetVendor: () => set({
     page: "FilterPage",
     selectedVendor: "",
@@ -291,6 +333,32 @@ console.log('DB轉換資料:', dbDateString);
     },
     selectedProduct: "",
   }),
+
+
+
+  
+  resetVendor: () => {  // 2. 使用 set((state) => ...) 讀取目前的市場狀態，決定返回哪一頁
+  set((state) => ({
+    // 💡 貼心判斷：如果使用者是從「列表」點進來的（有 selectedMarket），就退回 FilterPage；
+    // 如果是朋友「直接點分享連結」空降進來的（沒有選過市場），就退回 Welcome 首頁！
+    page: state.selectedMarket ? 'FilterPage' : 'Welcome',
+    
+    selectedVendor: '',
+    selectedVendorUID: '', // 如果你有存 UID 記得也一併清空
+    selectedVendorInfo: {
+      name: '',
+      introduce: '',
+      owner: '',
+      poc: '',
+      phone: '',
+      updatedAt: '',
+      isUpdatedToday: false,
+      rating: 0,
+      reviewCount: 0,
+    },
+    selectedProduct: '',
+  }));
+},
 
   //   // DB功能 A：一打開網頁，去撈所有市場清單(尚未做錯誤處理)(正規化，沒BUG就可以刪了)
   // loadAllMarkets: async (marketType) => {
@@ -394,4 +462,6 @@ console.log(" selectedMarketUID:", selectedMarketUID);
     set({ marketsInfo: marketsInfoObject });
   },
 
-}))
+// }))
+
+}})

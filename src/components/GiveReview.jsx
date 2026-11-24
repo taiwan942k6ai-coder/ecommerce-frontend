@@ -91,7 +91,7 @@ async function saveReview () {
         </div>
                    
         <div > {/* （複選） */}
-            <p className="text-sm font-bold text-gray-700 mb-2">評價標籤　（可複選）</p>
+            <p className="text-sm font-bold text-gray-700 mb-2">　評論標籤　（可複選）</p>
             <div className="flex flex-wrap gap-2">
             {tagOptions.map((tag) => {
                 const isSelected = tags.includes(tag.id);

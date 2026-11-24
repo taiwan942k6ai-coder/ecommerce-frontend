@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Star, StarHalf, ThumbsUp, ThumbsDown, ArrowLeft, MessageSquare, MapPin, Share2, Check } from "lucide-react"; // 引入小圖示
 import { useMarketStore } from '../store/useMarketStore'; 
@@ -7,9 +7,10 @@ import  GiveReview  from '../components/GiveReview';
 
 function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
   // const page = useMarketStore((state) => state.page);
-  // const selectedMarket = useMarketStore((state) => state.selectedMarket);
+  const selectedMarket = useMarketStore((state) => state.selectedMarket);
   const selectedMarketType = useMarketStore(state => state.selectedMarketType);
   const selectedVendor = useMarketStore((state) => state.selectedVendor);
+  const selectedVendorUID = useMarketStore((state) => state.selectedVendorUID);
   const vendorInfo = useMarketStore((state) => state.selectedVendorInfo);
   // const selectedProduct = useMarketStore((state) => state.selectedProduct);
   // const markets = useMarketStore((state) => state.markets);
@@ -20,6 +21,16 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
   // const setVendor = useMarketStore((state) => state.setVendor);
   // const setProduct = useMarketStore((state) => state.setProduct);
   const resetVendor = useMarketStore((state) => state.resetVendor);
+  const handleVendorChange = useMarketStore((state) => state.handleVendorChange);
+  const handleMarketChange = useMarketStore((state) => state.handleMarkerChange);
+  
+  useEffect(() => {
+  // 條件：網址有帶 ID (selectedVendorUID 有值)，而且目前還沒有商店資料 (!selectedVendor 或為空字串)
+  if (selectedVendorUID && (!selectedVendor || selectedVendor === "")) {
+    // handleMarketChange(selectedMarket,null);
+    handleVendorChange(selectedVendorUID);
+  }
+}, [selectedVendorUID]);
 
   // 處理點擊事件的函式
   const handleLineClick = (event) => {
@@ -116,8 +127,8 @@ const handleShare = async (pd_name) => {
 
 
 
-// console.log("【除錯】VendorDetail 接收到的原始 products 陣列是:", products);
-// console.log("【除錯】VendorDetail 接收到的 vendorInfo.tagCounts:", vendorInfo.tagCount);
+console.log("【除錯】VendorDetail 接收到的原始 selectedVendor 陣列是:", selectedVendor);
+console.log("【除錯】VendorDetail 接收到的 selectedVendorUID:", selectedVendorUID);
 if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
 return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
@@ -200,7 +211,7 @@ return (
                 </span>))}
             </div>
 
-            <Button variant="outline" size="sm" className="text-xs h-6">
+            <Button variant="outline" size="sm" className="text-xs h-6"  onClick={() => {setIsSeeReviewOpen(true); }}>
               <MessageSquare className="w-3 h-3 " />看評論
             </Button>
           </div>
@@ -267,10 +278,9 @@ return (
       </div>
 
        {/* 獨立彈窗 */}
-      <GiveReview isOpen={isGiveReviewOpen} onClose={() => {setIsGiveReviewOpen(false)}}      children="沒有"  vendorInfo={vendorInfo} storeName={selectedVendor} selectedProduct={selectedProduct}/>
-      <SeeReview  isOpen={isSeeReviewOpen} onClose={() => setIsSeeReviewOpen(false)}   vendorInfo={vendorInfo} storeName={selectedVendor}  />
+      <GiveReview isOpen={isGiveReviewOpen} onClose={() => {setIsGiveReviewOpen(false)}}  selectedProduct={selectedProduct}/>
+      <SeeReview  isOpen={isSeeReviewOpen} onClose={() => setIsSeeReviewOpen(false)}     />
       
-
     </div>
   );
 }
