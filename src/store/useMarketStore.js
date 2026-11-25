@@ -5,6 +5,7 @@ import {  fetchMarketsFromDB2, fetchVendorInfoFromDB, fetchVendorsByMarketFromDB
 const getParamsFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
  return {
+    venderName: params.get('name') || null, 
     vendorId: params.get('vendor') || null,   // 讀取 ?vendor=...
     marketType: params.get('market') || null,   // 讀取 &market=...
     // marketId: params.get('market') || null,   // 讀取 &market=...
@@ -16,7 +17,7 @@ const getParamsFromUrl = () => {
 // export const useMarketStore = create((set, get) => ({
   export const useMarketStore = create((set, get) => {
     // 檢查剛進網站時，網址是否已經帶有 ?seller=xxx
-  const { vendorId, marketType } = getParamsFromUrl();
+  const { venderName, vendorId, marketType } = getParamsFromUrl();
   
   return {
   // #region       💰 1. 這裡放所有的全域變數 (State)
@@ -33,7 +34,7 @@ const getParamsFromUrl = () => {
     vendors: [],//目前是前端運算，看是否要改成DB直接給
     url:"",
   },
-  selectedVendor: "",
+  selectedVendor: vendorId ? venderName : "",
   selectedVendorUID:  vendorId ? vendorId : "",
   selectedVendorInfo:{
       name: "",
@@ -69,6 +70,7 @@ const getParamsFromUrl = () => {
       const url = new URL(window.location.href);
       // 如果不是去詳細頁，就把網址上的 ?seller=xxx 清掉
       if (newPage !== 'VendorDetail') {
+        url.searchParams.delete('name');
         url.searchParams.delete('vendor');
         url.searchParams.delete('market');
         window.history.pushState({}, '', url);
@@ -153,6 +155,7 @@ console.log("抓商品資料，資料庫回傳的原始資料是：", dbProducts
   handleVendorChange: async (vendorUID) => {
           // 更新網址列，不重新整理網頁
       const url = new URL(window.location.href);
+      url.searchParams.set('name', get().selectedVendor);
       url.searchParams.set('vendor', vendorUID);
       url.searchParams.set('market', get().selectedMarketType);
       window.history.pushState({}, '', url);
@@ -231,7 +234,7 @@ console.log("抓商品資料，資料庫回傳的原始資料是：", dbProducts
       const rate = matched ? matched.score : 0;
 
     const vendorInfoObject = {
-      name: dbVendorInfoData[0].name || "沒有名子",
+      name: dbVendorInfoData[0].sp_name || "沒有名子",
       introduce:  dbVendorInfoData[0].sp_introduce || "沒有介紹",
       // owner: dbVendorInfoData[0].owner || "沒有擁有者資訊",
       poc: dbVendorInfoData[0].poc || dbVendorInfoData[0].owner || "沒有聯絡人資訊",

@@ -26,8 +26,9 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
   
   useEffect(() => {
   // 條件：網址有帶 ID (selectedVendorUID 有值)，而且目前還沒有商店資料 (!selectedVendor 或為空字串)
-  if (selectedVendorUID && (!selectedVendor || selectedVendor === "")) {
+  // if (selectedVendorUID && (!selectedVendor || selectedVendor === "")) {
     // handleMarketChange(selectedMarket,null);
+    if (selectedVendorUID && (!selectedMarket || selectedMarket === "")) {
     handleVendorChange(selectedVendorUID);
   }
 }, [selectedVendorUID]);
@@ -129,7 +130,7 @@ const handleShare = async (pd_name) => {
 
 console.log("【除錯】VendorDetail 接收到的原始 selectedVendor 陣列是:", selectedVendor);
 console.log("【除錯】VendorDetail 接收到的 selectedVendorUID:", selectedVendorUID);
-if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{selectedVendor}】 的店家資訊和商品...</div>;
+if (isLoading) return <div>🛒 正在從資料庫撈取<br /> 【{ selectedVendor}】 的店家資訊和商品...</div>;
 return (
     <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden animate-fade-in">
       
@@ -148,14 +149,14 @@ return (
         <div className="absolute bottom-4 left-4 text-white">
                 { selectedMarketType==='offline' && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">現場實照</span>}
                 { selectedMarketType==='online'  && <span className="text-xs font-bold bg-green-600 text-white px-2 py-0.5 rounded-full">官網形象照</span>}
-          <h2 className="text-2xl font-bold mt-1 shadow-sm">{selectedVendor}</h2>
+          <h2 className="text-2xl font-bold mt-1 shadow-sm">{vendorInfo.name}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                                  {vendorInfo.introduce || "暫無介紹"}</h3>
         </div>
       </div>
 
       {/* 攤販基本資料區塊 */}
-      <div className="p-5 border-b border-slate-100 bg-slate-50/50">
+      <div className="p-5 pb-2 border-b border-slate-100 bg-slate-50/50">
         <div className="grid grid-cols-5 gap-y-2 text-sm text-slate-600">
           <div className="col-span-2">聯絡人👨‍🌾：<span className="shrink-0 font-medium text-slate-900">{vendorInfo.poc}</span></div>
           <div className="col-span-3">　電話📞：<span className="whitespace-nowrap font-medium text-slate-900">{vendorInfo.phone}</span></div>
@@ -200,24 +201,22 @@ return (
               <span key={tag.key} className="tag-badge">  {tag.label} ({tag.count})  </span>))
           ) : (  <span className="no-tags">近 10 天尚無標籤評價</span>)}
         </div> */}
-
-          <div className="flex items-center justify-between gap-2 w-full  mt-4">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {topThreeTags.map((tag, index) => (
-                <span  key={tag.key}  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-tight font-medium border ${
-                    index === 0  ? 'bg-amber-50 text-amber-700 border-amber-200'  : 'bg-amber-50/40 text-amber-700/80 border-amber-200/60'}`}>
-                <span>{tag.label}</span>
-                <span className="py-0.5 font-bold opacity-80">{tag.count}</span>
-                </span>))}
-            </div>
-
-            <Button variant="outline" size="sm" className="text-xs h-6"  onClick={() => {setIsSeeReviewOpen(true); }}>
-              <MessageSquare className="w-3 h-3 " />看評論
-            </Button>
-          </div>
-
       </div>
 
+      {/* 評論區塊 */}
+      <div className="flex items-center justify-between gap-2 w-full  mt-2 mx-3 ">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {topThreeTags.map((tag, index) => (
+            <span  key={tag.key}  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] leading-tight font-medium border ${
+                index === 0  ? 'bg-amber-50 text-amber-700 border-amber-200'  : 'bg-amber-50/40 text-amber-700/80 border-amber-200/60'}`}>
+            <span>{tag.label}</span>
+            <span className="py-0.5 font-bold opacity-80">{tag.count}</span>
+            </span>))}
+        </div>
+        <Button variant="outline" size="sm" className="text-xs h-6 mr-6"  onClick={() => {setIsSeeReviewOpen(true); }}>
+          <MessageSquare className="w-3 h-3" />看評論
+        </Button>
+      </div>
 
       {/* 商品串列區塊 */}
       <div className="p-5">
@@ -279,7 +278,7 @@ return (
 
        {/* 獨立彈窗 */}
       <GiveReview isOpen={isGiveReviewOpen} onClose={() => {setIsGiveReviewOpen(false)}}  selectedProduct={selectedProduct}/>
-      <SeeReview  isOpen={isSeeReviewOpen} onClose={() => setIsSeeReviewOpen(false)}     />
+      <SeeReview  isOpen={isSeeReviewOpen} onClose={() => setIsSeeReviewOpen(false)}   venderName={vendorInfo.name}  />
       
     </div>
   );

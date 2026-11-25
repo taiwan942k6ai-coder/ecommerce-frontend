@@ -21,7 +21,7 @@ export default function GiveReview({ isOpen, onClose, selectedProduct }) {
 
   const tagOptions = [
     {id:1, label:'🥬 新鮮、高品質'}, {id:2, label:'💰 便宜、公道'},
-    {id:3, label:'🤝 老闆阿莎力'}, {id:4, label:'🏃 推薦必買'},
+    {id:3, label:'🤝 老闆阿莎力～'}, {id:4, label:'🏃 推薦必買！'},
     {id:5, label:'🧅 賣相不佳'}, {id:6, label:'⚠️ 價格偏高'},
     {id:7, label:'⚠️ 有話要說！'},
     // '🥬 新鮮、高品質', '💰 便宜、公道', '🤝 老闆阿莎力', 
@@ -29,7 +29,7 @@ export default function GiveReview({ isOpen, onClose, selectedProduct }) {
   ];
 
  // 至少要選一個標籤，或是有輸入文字才能送出
-  const canSubmit = tags.length > 0 || comment.trim().length > 0;
+  const canSubmit = (tags.length > 0 || comment.trim().length > 0) && tags.length < 3;
 
   // 切換複選陣列（改用 id 判斷，最不會出錯）
   const toggleSelection = (id) => {
@@ -91,7 +91,7 @@ async function saveReview () {
         </div>
                    
         <div > {/* （複選） */}
-            <p className="text-sm font-bold text-gray-700 mb-2">　評論標籤　（可複選）</p>
+            <p className="text-sm font-bold text-gray-700 mb-2">　評論標籤　（最多選兩項）</p>
             <div className="flex flex-wrap gap-2">
             {tagOptions.map((tag) => {
                 const isSelected = tags.includes(tag.id);
@@ -121,7 +121,7 @@ async function saveReview () {
         <button  type="button"  disabled={!canSubmit}
             onClick={handleSubmit}
             className="w-full py-3.5 my-4 rounded-xl bg-orange-500 text-white font-bold text-base shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed">
-            送出反饋（ +10 積分）
+            {(tags.length > 2)? "選超過 2個標籤" : "送出反饋（+10 積分）"}
         </button>
         <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-3" />
       </div>

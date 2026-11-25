@@ -193,7 +193,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
         <div>
           <span className="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">網站位置：線上電商</span>
 
-          <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarket}</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mt-1">{selectedMarketInfo?.name}</h2>
           <h3 className="text-sm text-slate-500 mt-1.5 font-medium leading-relaxed">
                                           {selectedMarketInfo?.introduce || "暫無介紹"}</h3>
         </div>
@@ -213,7 +213,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
             key={vendor.uid} 
             variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            onClick={() => handleVendorChange(vendor.uid)}
+            onClick={() => {handleVendorChange(vendor.uid);setVendor(vendor.name)}}
           >
             <span>{vendor.name}</span>
             <span className="text-slate-400">→</span>
