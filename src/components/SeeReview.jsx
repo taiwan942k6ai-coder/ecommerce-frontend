@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
 import { supabase } from './db/supabaseClient'; // 確保路徑與你的 supabaseClient 一致
 import { useMarketStore } from '../store/useMarketStore'; 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function GiveReview({ isOpen, onClose, venderName}) {
     // console.log('目前抽屜狀態：', isOpen);
@@ -11,16 +13,56 @@ export default function GiveReview({ isOpen, onClose, venderName}) {
   const [comment, setComment] = useState(''); // 4. 一句話補充
   const [reviews, setReviews] = useState([]); // 4. 一句話補充
 
+  // 💡 只有自己會用到的變數，直接宣告在這裡！
+  const [reviewsProdCategory, setReviewsProdCategory] = useState([]);
+  // const [reviewsTagCategory, setReviewsTagCategory] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState("all"); // 依商品 spuid 篩選
+  const [selectedTag, setSelectedTag] = useState("all");         // 依 tag1~tag7 篩選
+  const [searchText, setSearchText] = useState("");              // 依評論關鍵字篩選
+
+// console.log('查看 reviewsProdCategory:',reviewsProdCategory);
+// console.log('查看 selectedTag:',selectedTag);
+
+
   useEffect(() => {
     if (!selectedVendorUID) return;
 
     const loadReviews  = async () => { 
         const result = await getReviews(selectedVendorUID); 
         console.log("【除錯】 result:", result)
-        setReviews(result || []);};
+        setReviews(result || []);
+      
+        // const reviewsProdSet = Array.from(new Map(result.map((cat) => cat.pduid.pd_name)))
+        const uniqueProducts = Array.from(new Map( (result || [])
+        .filter((item) => item.pduid) // 避免某些資料沒有 pduid 導致報錯
+        .map((item) => [item.pduid.pd_name, item.pduid])).values());
+        setReviewsProdCategory(uniqueProducts);
+
+        // const uniqueTags = Array.from(new Map( (result || [])
+        // .map((item) => [item.pduid.spuid, item.pduid])).values());
+        // const reviewsTagSet = Array.from(new Set(result.map((cat) => cat.pduid.pd_name)))
+        // setReviewsTagCategory(uniqueTags);
+      };
     loadReviews();
 
     },[selectedVendorUID])
+
+
+const filteredReviews = reviews.filter((item) => {
+  // 1. 篩選商品 (注意是 item.pduid?.spuid)
+  const matchProduct =  selectedProduct === "all" || item.pduid?.pd_name === selectedProduct;
+  // 2. 篩選標籤 (動態讀取 item['tag1'] ~ item['tag7'] 是否為 true)
+  const matchTag =      
+  // !selectedTag || selectedTag === "all" || item[selectedTag.key] === true;
+    selectedTag === "all" || item[selectedTag] === true;
+  // 3. 篩選評論內容或商品名稱關鍵字
+  const matchKeyword =  searchText === "" || 
+    item.comment?.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.pduid?.pd_name?.toLowerCase().includes(searchText.toLowerCase());
+
+  // 必須同時符合所有條件
+  return matchProduct && matchTag && matchKeyword;
+});
 
 
   async function getReviews(UID){
@@ -49,7 +91,10 @@ const REVIEW_TAG_MAP = {
   tag7: '⚠️ 有話要說！',
 };
 
-
+const TAG_OPTIONS = Object.entries(REVIEW_TAG_MAP).map(([key, label]) => ({
+  key,
+  label,
+}));
 
   const handleSubmit = () => {
     // saveReview();
@@ -74,11 +119,54 @@ const REVIEW_TAG_MAP = {
                   {venderName}　近期評論
             </div>
 
+              <div className="space-y-2 mt-2">
+                <div className="grid grid-cols-3 gap-2">
+                <label className="text-sm font-bold text-slate-700 block">🔍 特定商品</label>
+                <label className="text-sm font-bold text-slate-700 block">🔍 特定標籤</label>
+                <label className="text-sm font-bold text-slate-700 block">🔍 關鍵字</label>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Select value={selectedProduct} onValueChange={(val) => setSelectedProduct(val)}>
+                    <SelectTrigger className="w-full max-w-[100px] [&>span]:truncate"><SelectValue placeholder="不篩選：" /></SelectTrigger>
+                    <SelectContent position="popper" className="z-[9999]"> {/* 🌟 加上 popper 防阻擋 */}
+                    <SelectItem value="all">全部商品</SelectItem>
+                      {/* 🌟 改用純陣列去 map */}
+                      {reviewsProdCategory?.map((cat) => (
+                        <SelectItem key={cat.pd_name} value={cat.pd_name}>{cat.pd_name}</SelectItem>))} 
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={selectedTag} onValueChange={(selectedTag)=> {
+                              // const foundTag = TAG_OPTIONS.find((tag)=> String(tag.key) === selectedTag); setSelectedTag(foundTag || ""); 
+                              setSelectedTag(selectedTag)
+                              }}>
+                    <SelectTrigger className="w-full max-w-[100px] [&>span]:truncate">
+                        <SelectValue placeholder="不篩選：" >
+                            {/* 🌟 自己決定要顯示什麼文字：如果是 all 就顯示「全部標籤」，否則去查 REVIEW_TAG_MAP 的中文 */}
+                            {selectedTag === "all"  ? "全部標籤" : REVIEW_TAG_MAP[selectedTag] || "不篩選："}
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent position="popper" className="z-9999">
+                      <SelectItem value="all">全部標籤</SelectItem>
+                      {TAG_OPTIONS.map((v) => (<SelectItem key={v.key} value={v.key}> {v.label} </SelectItem>))}
+                    </SelectContent>
+                  </Select>
+
+                  <input  type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)}
+                    placeholder="特定字詞..." 
+                    className="h-8 w-full max-w-[140px] truncate rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                </div>
+              </div>
+
+
+
+
 
 
                   <div className="w-full space-y-3 mt-4">
-                      {reviews && reviews.length > 0 ? (
-                        reviews.filter((item) => item.comment && item.comment.trim() !== '').map((item) => {
+                      {filteredReviews && filteredReviews.length > 0 ? (
+                        filteredReviews.filter((item) => item.comment && item.comment.trim() !== '').map((item) => {
                           // 篩選出這則評論有勾選（為 true）的標籤
                           const activeTags = Object.keys(REVIEW_TAG_MAP).filter((key) => item[key] === true);
 

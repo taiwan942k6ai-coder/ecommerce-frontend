@@ -22,7 +22,7 @@ function VendorDetail() {  // 💡 使用Zustand  直接去金庫把「切換市
   // const setProduct = useMarketStore((state) => state.setProduct);
   const resetVendor = useMarketStore((state) => state.resetVendor);
   const handleVendorChange = useMarketStore((state) => state.handleVendorChange);
-  const handleMarketChange = useMarketStore((state) => state.handleMarkerChange);
+  // const handleMarketChange = useMarketStore((state) => state.handleMarkerChange);
   
   useEffect(() => {
   // 條件：網址有帶 ID (selectedVendorUID 有值)，而且目前還沒有商店資料 (!selectedVendor 或為空字串)

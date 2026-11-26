@@ -4,6 +4,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { vendorData, productData } from '../fakeData/mockData'; // 引進需要的假資料
 import { useMarketStore } from '../store/useMarketStore'; 
 
+// 下拉選單 右半邊 需要重構，不應該把整個物件存進去。但重構要修改很多地方
+
 function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市場」的功能領出來用！
   // const page = useMarketStore((state) => state.page);
   const selectedMarketType = useMarketStore(state => state.selectedMarketType);
@@ -102,7 +104,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
                   {/* 右邊的標籤，難呀!!! */}
                   <Select value={selectedVendor} onValueChange={handleSelectVendorChange} disabled={!vendorCategory}>
                     <SelectTrigger><SelectValue placeholder="選擇指定攤販" /></SelectTrigger>
-                    <SelectContent position="popper" className="z-">
+                    <SelectContent position="popper" className="z-9999">
                       {vendorCategory && vendors?.find((c) => c.name === vendorCategory)
                         ?.vendors?.map((v) => (<SelectItem key={v.uid} value={v}> {v.name} </SelectItem>))}
                     </SelectContent>
@@ -203,7 +205,8 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
       </div>
 
         <div className="w-full h-44 bg-slate-100 rounded-xl overflow-hidden mb-6 border border-slate-200 flex items-center justify-center relative">
-          <img src={selectedMarketInfo.url} alt={"電商產業類別_"+selectedMarketInfo.name+"_形像照"} className="w-full h-full object-cover opacity-70" />
+          <img src={selectedMarketInfo?.url || "https://yxshqhkjfkljnnhwgbod.supabase.co/storage/v1/object/public/shop-images/NoIndustryImage.jpg"}
+           alt={"電商產業類別_"+selectedMarketInfo?.name+"_形像照"} className="w-full h-full object-cover opacity-70" />
           {/* <div className="absolute inset-0 bg-black/30 flex items-center justify-center p-4"></div> */}
         </div>
 
@@ -213,7 +216,7 @@ function FilterPage() {  // 💡 使用Zustand  直接去金庫把「切換市�
             key={vendor.uid} 
             variant="outline" 
             className="py-6 text-base font-medium shadow-sm hover:bg-slate-100 justify-between px-6"
-            onClick={() => {handleVendorChange(vendor.uid);setVendor(vendor.name)}}
+            onClick={() => { handleVendorChange(vendor.uid); setVendor(vendor.name); setVendorUID(vendor.uid)}}
           >
             <span>{vendor.name}</span>
             <span className="text-slate-400">→</span>
